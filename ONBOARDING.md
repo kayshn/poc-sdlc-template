@@ -85,6 +85,52 @@ Two gates live only in GitHub settings and appear in no file in the repo.
 
 ## 5. Prove it — drive one change round the loop
 
+Solid boxes are yours. Dashed boxes happen on their own.
+
+```mermaid
+flowchart TD
+    I["YOU<br/>Write .sdlc/intent/NNN-name.md<br/>Open a PR and merge it"]
+    S["Spec written, approved and merged"]
+    B["Build issue opens,<br/>quoting the spec's areas of concern"]
+    G{"YOU<br/>Happy with the spec?"}
+    X["Close the issue.<br/>Nothing is built."]
+    C["YOU<br/>Comment @claude on the issue"]
+    P["Plan, code and tests<br/>pushed to a branch"]
+    O["YOU<br/>Click Create PR"]
+    R["CI runs. AI posts review findings.<br/>It never approves."]
+    G2{"YOU<br/>Happy with the change?"}
+    F["YOU<br/>Comment @claude fix this"]
+    M["YOU<br/>Merge the PR"]
+    D["Deploy waits for a release approval"]
+    A["YOU<br/>Approve the deployment"]
+    L(["Live in production"])
+
+    I --> S --> B --> G
+    G -- no --> X
+    G -- yes --> C --> P --> O --> R --> G2
+    G2 -- no --> F --> R
+    G2 -- yes --> M --> D --> A --> L
+
+    classDef auto stroke-dasharray: 5 5
+    class S,B,P,R,D auto
+```
+
+**Five actions, one slug.** Everything between them is automatic, and nothing reaches production
+without you:
+
+| # | You do | Where |
+|---|---|---|
+| 1 | Write the intent, open a PR, merge it | `.sdlc/intent/<slug>.md` |
+| 2 | Comment `@claude` to accept the spec and start the build | the Build issue |
+| 3 | Open the PR from the agent's branch | the *Create PR* link |
+| 4 | Merge once CI and the review look right | the PR |
+| 5 | Approve the release | the `production` environment |
+
+Step 2 is the one to understand: it is where you **reject** a spec by closing the issue instead.
+The agent has written a design by then, but nothing has been built.
+
+### The same thing in words
+
 1. **Plan.** *"Use the write-intent skill: \<your idea\>."* The agent writes `.sdlc/intent/<slug>.md`.
    Open a PR; `claude-review` comments; a code owner merges.
 2. **Design.** The merge fires `intent-to-spec.yml`. The agent writes `.sdlc/specs/<slug>.md` with
