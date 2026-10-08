@@ -85,24 +85,24 @@ Two gates live only in GitHub settings and appear in no file in the repo.
 
 ## 5. Prove it — drive one change round the loop
 
-Solid boxes are yours. Dashed boxes happen on their own.
+A solid outline is a step someone performs. A dashed outline happens on its own.
 
 ```mermaid
 flowchart TD
-    I["YOU<br/>Write .sdlc/intent/NNN-name.md<br/>Open a PR and merge it"]
+    I["Write .sdlc/intent/NNN-name.md<br/>Open a pull request and merge it"]
     S["Spec written, approved and merged"]
     B["Build issue opens,<br/>quoting the spec's areas of concern"]
-    G{"YOU<br/>Happy with the spec?"}
+    G{"Spec accepted?"}
     X["Close the issue.<br/>Nothing is built."]
-    C["YOU<br/>Comment @claude on the issue"]
+    C["Comment @claude on the issue"]
     P["Plan, code and tests<br/>pushed to a branch"]
-    O["YOU<br/>Click Create PR"]
-    R["CI runs. AI posts review findings.<br/>It never approves."]
-    G2{"YOU<br/>Happy with the change?"}
-    F["YOU<br/>Comment @claude fix this"]
-    M["YOU<br/>Merge the PR"]
-    D["Deploy waits for a release approval"]
-    A["YOU<br/>Approve the deployment"]
+    O["Open the pull request<br/>from the agent's branch"]
+    R["CI runs. The AI review posts findings.<br/>It never approves."]
+    G2{"Ready to merge?"}
+    F["Comment @claude fix this"]
+    M["Merge the pull request"]
+    D["Deployment waits for release approval"]
+    A["Approve the deployment"]
     L(["Live in production"])
 
     I --> S --> B --> G
@@ -116,18 +116,18 @@ flowchart TD
 ```
 
 **Five actions, one slug.** Everything between them is automatic, and nothing reaches production
-without you:
+without a person acting:
 
-| # | You do | Where |
-|---|---|---|
-| 1 | Write the intent, open a PR, merge it | `.sdlc/intent/<slug>.md` |
-| 2 | Comment `@claude` to accept the spec and start the build | the Build issue |
-| 3 | Open the PR from the agent's branch | the *Create PR* link |
-| 4 | Merge once CI and the review look right | the PR |
-| 5 | Approve the release | the `production` environment |
+| # | Action | Where | Who |
+|---|---|---|---|
+| 1 | Write the intent, open a pull request, merge it | `.sdlc/intent/<slug>.md` | author, then code owner |
+| 2 | Comment `@claude` to accept the spec and start the build | the Build issue | product owner |
+| 3 | Open the pull request from the agent's branch | the *Create PR* link | author |
+| 4 | Merge once CI and the review look right | the pull request | code owner |
+| 5 | Approve the release | the `production` environment | release manager |
 
-Step 2 is the one to understand: it is where you **reject** a spec by closing the issue instead.
-The agent has written a design by then, but nothing has been built.
+Step 2 is the one to understand: it is where a spec is rejected, by closing the issue instead of
+commenting. A design exists by then, but nothing has been built.
 
 ### The same thing in words
 
