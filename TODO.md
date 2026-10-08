@@ -77,3 +77,4 @@ Design constraints:
 - Clarify how versioning works in template and consumer works
 - Add some engineering guardrails
 - Update spec step to create and update C4 diagrams if necessary
+- Test the monitor stage
