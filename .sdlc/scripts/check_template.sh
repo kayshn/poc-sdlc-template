@@ -70,9 +70,11 @@ if [ -n "$version" ]; then
 
   for wf in ci claude-review deploy agent-evals sdlc-update; do
     [ -f ".github/workflows/$wf.yml" ] || continue
-    ok_if 'grep -qE "uses: *[^ ]+/\.github/workflows/_$wf\.yml@" ".github/workflows/$wf.yml"' \
+    # Anchored to the start of the line so the `#   uses: ...@vX` example in the file header
+    # cannot satisfy the check.
+    ok_if 'grep -qE "^[[:space:]]*uses: *[^ #]+/\.github/workflows/_$wf\.yml@" ".github/workflows/$wf.yml"' \
       "$wf.yml calls the standard by ref, not by local copy"
-    pinned=$(sed -nE "s#.*uses: *[^ ]+/\.github/workflows/_$wf\.yml@([^ ]+).*#\1#p" ".github/workflows/$wf.yml")
+    pinned=$(sed -nE "s#^[[:space:]]*uses: *[^ #]+/\.github/workflows/_$wf\.yml@([^ ]+).*#\1#p" ".github/workflows/$wf.yml")
     [ -z "$pinned" ] || ok_if '[ "$pinned" = "$version" ]' \
       "$wf.yml is pinned to $version (found ${pinned:-none})"
   done

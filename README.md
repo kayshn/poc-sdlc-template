@@ -68,20 +68,21 @@ standard keeps arriving, as a pull request.
 ```bash
 gh repo create <owner>/<app> --template kayshn/poc-sdlc-template --clone --public
 cd <app>
-./.sdlc/scripts/sdlc_update.sh --source kayshn/poc-sdlc-template   # pins the newest tag
-rm .github/workflows/_*.yml                                        # consumers call them by ref
+./.sdlc/scripts/sdlc_update.sh --source kayshn/poc-sdlc-template
 ```
 
-Then repoint each thin caller at the tag now recorded in `.sdlc/TEMPLATE_VERSION`:
+That first install pins the newest tag in `.sdlc/TEMPLATE_VERSION`, repoints every thin caller at it,
+and deletes the local `_*.yml` copies, which are inert in a consumer because `workflow_call` never
+self-fires. You are left with:
 
 ```yaml
 jobs:
   ci:
-    uses: kayshn/poc-sdlc-template/.github/workflows/_ci.yml@v1.0.0
+    uses: kayshn/poc-sdlc-template/.github/workflows/_ci.yml@v1.1.0
     secrets: inherit
 ```
 
-`make template-check` fails until all of that is true, so you cannot half-finish it.
+`make template-check` fails until the rest of *Adapt it* is done too, so you cannot half-finish it.
 
 ### One-time GitHub setup
 

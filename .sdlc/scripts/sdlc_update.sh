@@ -53,6 +53,8 @@ if [ "$ref" = "$current" ]; then
   echo "Already on $source_repo $ref."
   exit 0
 fi
+first_install=0
+[ -n "$current" ] || first_install=1
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
@@ -91,14 +93,34 @@ done <<<"$incoming"
 
 cp -p "$src/$MANIFEST" "$MANIFEST"
 
-# Repoint the thin callers at the new tag. Needs a token allowed to touch .github/workflows/.
-for wf in .github/workflows/*.yml; do
-  [ -f "$wf" ] || continue
-  grep -qE "uses: *$source_repo/\.github/workflows/_[a-z-]+\.yml@" "$wf" || continue
-  sed -i.bak -E "s#(uses: *$source_repo/\.github/workflows/_[a-z-]+\.yml@)[^ ]*#\1$ref#" "$wf"
-  rm -f "$wf.bak"
-  echo "  ~ $wf -> $ref"
-done
+# Every pattern below is anchored to the start of the line, so the `#   uses: ...` example in a
+# caller's header comment is never mistaken for the real job key.
+if [ "$first_install" = 1 ]; then
+  # A repo made from the template calls the bodies through its own copies. Switch it over to
+  # calling them by tag, and drop the copies: workflow_call never self-fires, so they are inert.
+  for wf in .github/workflows/*.yml; do
+    [ -f "$wf" ] || continue
+    case $(basename "$wf") in _*) continue ;; esac
+    grep -qE '^[[:space:]]*uses: *\./\.github/workflows/_[a-z-]+\.yml' "$wf" || continue
+    sed -i.bak -E "s#^([[:space:]]*uses: *)\./(\.github/workflows/_[a-z-]+\.yml)#\1$source_repo/\2@$ref#" "$wf"
+    rm -f "$wf.bak"
+    echo "  ~ $wf now calls $source_repo@$ref"
+  done
+  for callable in .github/workflows/_*.yml; do
+    [ -f "$callable" ] || continue
+    rm -f "$callable"
+    echo "  - $callable"
+  done
+else
+  # Repoint the thin callers at the new tag. Needs a token allowed to touch .github/workflows/.
+  for wf in .github/workflows/*.yml; do
+    [ -f "$wf" ] || continue
+    grep -qE "^[[:space:]]*uses: *$source_repo/\.github/workflows/_[a-z-]+\.yml@" "$wf" || continue
+    sed -i.bak -E "s#^([[:space:]]*uses: *$source_repo/\.github/workflows/_[a-z-]+\.yml@)[^ ]*#\1$ref#" "$wf"
+    rm -f "$wf.bak"
+    echo "  ~ $wf -> $ref"
+  done
+fi
 
 {
   echo "# Written by .sdlc/scripts/sdlc_update.sh. The invariant layer below this project's own"
