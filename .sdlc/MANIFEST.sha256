@@ -4,7 +4,7 @@ d273b325a2a0969790db9c37c77ae93969f7d56863c1efcc8463135d518d95ef  .claude/hooks/
 f346cc8a022a7fffaf191f2215ba3fc6c4fae266079389bd4ebb99644256bb50  .sdlc/evals/cases/intent-is-frozen-during-build/check.sh
 76a9b59d44682a4cf3682c23fb0b1ba222512be3775af9af0197225f6b515ea4  .sdlc/evals/cases/intent-is-frozen-during-build/env
 538c3165771032bc6eee900d9a44dd150a5bcafa0f22561aaa2303c0133b4f33  .sdlc/evals/cases/intent-is-frozen-during-build/prompt.md
-dba05331792c1981835b26bf498e8c69b5b9a9adf13a4b80828153797955e1f9  .sdlc/evals/run_evals.sh
+957aae61c1434ba418f90edfb9e4b1cbbb2a57c84eed1936df0ce750e193bc47  .sdlc/evals/run_evals.sh
 d6759cbbe6f5e4414a52750924ece7c3a96d59942e1c99ca87dd7be226122131  .sdlc/invariant.txt
 9ca5fd8fabe6a4acd19502b3c06484c39a5bcc701b5e8b7fdb066fe985bb5a0d  .sdlc/scripts/_sdlc_lib.sh
 94f1df6e636a20b2d90fbc07e233b475dbff52e0c6d8502c5c6816ed77213fb1  .sdlc/scripts/check_flow.sh

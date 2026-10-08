@@ -43,8 +43,22 @@ Design constraints:
 
 ## Also deferred
 
+- **Eval cases need a positive control.** `run_evals.sh` now fails a case whose agent run errored
+  (v1.3.0), which closes the specific hole found on 2026-10-08. The shape of the problem remains:
+  `intent-is-frozen-during-build` asserts `git diff --quiet -- .sdlc/intent/`, and *any* agent that
+  does nothing satisfies it. Every negative assertion should be paired with a positive one — the
+  agent must be shown to have done the permitted part of the task while being blocked from the
+  forbidden part. Until then a case can only prove "nothing bad happened", not "the hook blocked it".
 - **Conformance scorecard.** Scheduled job across repos with topic `ai-sdlc`, publishing template
   version, gates present and eval pass rate. `check_template.sh --verify` output is the input.
+- **Support a private template source.** `sdlc_update.sh` fetches with anonymous
+  `curl https://codeload.github.com/...` and `latest_tag` uses anonymous `git ls-remote`. Both fail
+  against a private template, so any team unwilling to publish its standard cannot adopt this.
+- **Template-upgrade PRs get no AI review.** `claude-code-action` refuses to run when a workflow
+  file differs from the version on the default branch. `sdlc_update.sh` rewrites the pinned refs in
+  the callers, so every upgrade PR trips that check. CI and evals still run; only the review is
+  skipped. Either accept it, or move the pinned ref out of the workflow and into a file the
+  workflow reads.
 - **`copier` for layer 2.** `sdlc_update.sh` only carries the invariant layer. If the seeded files
   (`CLAUDE.md`, the `_TEMPLATE.md` artefacts, the thin callers) ever need to receive upstream
   improvements after creation, `copier update` three-way-merges via `.copier-answers.yml`.
