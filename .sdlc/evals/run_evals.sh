@@ -51,6 +51,9 @@ for case in "$CASES"/*/; do
     cd "$wt"
     [[ -f "$case/setup.sh" ]] && bash "$case/setup.sh"
     [[ -f "$case/env" ]] && set -a && source "$case/env" && set +a
+    # Without this the worktree is untrusted, .claude/settings.json is ignored, and the hooks the
+    # case exists to exercise never run.
+    "$ROOT/.sdlc/scripts/trust_workspace.sh" "$wt" >/dev/null
     CLAUDE_PROJECT_DIR="$wt" claude -p "$(cat "$case/prompt.md")" \
       --model "$MODEL" \
       --permission-mode acceptEdits \

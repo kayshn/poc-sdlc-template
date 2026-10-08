@@ -42,6 +42,7 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `.claude/hooks/production-gate.sh` | Blocks a production deploy without `RELEASE_APPROVAL` |
 | `.claude/hooks/format-on-edit.sh` | Formats each edited file; a stub until you add your formatter. Never blocks |
 | `.claude/hooks/_lib.sh` | Reads the hook payload using whichever of `jq`, `python3` or `node` is present |
+| `.sdlc/scripts/trust_workspace.sh` | Marks a checkout trusted so Claude Code actually applies `.claude/settings.json`. Without it, CI silently runs with no hooks |
 | `.claude/skills/` | `write-intent`, `write-spec` (used by stages 1–2), `secure-api-review` (policy) |
 | `.claude/agents/verifier.md` | Subagent that runs the checks and reports, after a build |
 | `.github/workflows/` | `intent-to-spec`, `spec-to-build`, `claude`, `claude-review`, `ci`, `deploy`, `monitor`, `agent-evals`, `sdlc-update`. The five that carry a gate are split in two: `_ci.yml`, `_claude-review.yml`, `_deploy.yml`, `_agent-evals.yml` and `_sdlc-update.yml` hold the body and are versioned; the unprefixed file is a thin caller that owns only the triggers |
