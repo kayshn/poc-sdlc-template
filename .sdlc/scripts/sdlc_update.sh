@@ -11,6 +11,7 @@
 # could never detect drift, and one bad tag would break every consumer at once. Upgrading is an
 # act with a diff and a review, which is the whole point.
 set -euo pipefail
+trap 'echo "sdlc_update.sh failed at line $LINENO" >&2' ERR
 cd "$(dirname "$0")/../.."
 # shellcheck source=.sdlc/scripts/_sdlc_lib.sh
 . ./.sdlc/scripts/_sdlc_lib.sh

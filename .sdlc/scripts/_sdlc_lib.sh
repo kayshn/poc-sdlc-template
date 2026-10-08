@@ -69,13 +69,14 @@ expand_invariant() {
 }
 
 # owner/repo this project takes the standard from, or empty in the template repo itself.
-template_source() { sed -n 's/^source: *//p' "$VERSION_FILE" 2>/dev/null; }
+# The `|| true` matters: callers run under `set -e`, and a first install has no version file yet.
+template_source() { sed -n 's/^source: *//p' "$VERSION_FILE" 2>/dev/null || true; }
 
 # The tag currently installed, or empty in the template repo itself.
-template_version() { sed -n 's/^version: *//p' "$VERSION_FILE" 2>/dev/null; }
+template_version() { sed -n 's/^version: *//p' "$VERSION_FILE" 2>/dev/null || true; }
 
 # Highest v* tag published by owner/repo. Empty if the network or the repo is unavailable.
 latest_tag() {
   git ls-remote --tags --refs "https://github.com/$1" 'v*' 2>/dev/null |
-    awk -F/ '{print $NF}' | LC_ALL=C sort -V | tail -1
+    awk -F/ '{print $NF}' | LC_ALL=C sort -V | tail -1 || true
 }
