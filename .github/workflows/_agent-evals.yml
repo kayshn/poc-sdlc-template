@@ -24,11 +24,38 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # A required status check has to report on every pull request. A `paths:` filter on the
+      # trigger would skip the run entirely on unrelated PRs, and a skipped run reports no status,
+      # leaving the check pending forever. So the filter lives here, inside a job that always runs.
+      - name: Does this change touch the agent's configuration?
+        id: scope
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -z "$BASE" ]; then
+            echo "Not a pull request; running the full suite."
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "$BASE" "$HEAD" |
+             grep -qE '^(CLAUDE\.md|\.sdlc/REVIEW\.md|\.claude/|\.sdlc/evals/)'; then
+            echo "relevant=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "relevant=false" >> "$GITHUB_OUTPUT"
+            echo "No change to CLAUDE.md, .sdlc/REVIEW.md, .claude/ or .sdlc/evals/, so the eval suite did not run." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       # Eval cases run `make lint` and `make test`; `make install` provisions the toolchain.
-      - run: make install
-      - run: npm install -g @anthropic-ai/claude-code
+      - if: steps.scope.outputs.relevant == 'true'
+        run: make install
+      - if: steps.scope.outputs.relevant == 'true'
+        run: npm install -g @anthropic-ai/claude-code
       - name: Run eval suite
+        if: steps.scope.outputs.relevant == 'true'
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           MIN_PASS_RATE: ${{ inputs.min_pass_rate }}
@@ -37,7 +64,7 @@ jobs:
           git config --global user.email evals@users.noreply.github.com
           ./.sdlc/evals/run_evals.sh | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.scope.outputs.relevant == 'true'
         with:
           name: eval-results
           path: eval-results/

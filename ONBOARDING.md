@@ -118,7 +118,7 @@ To require a product owner on every spec instead, set `stages.design.gate.approv
 |---|---|
 | `the invariant layer matches the manifest` fails | Someone edited a file in `.sdlc/invariant.txt`. `make sdlc-update` restores it; if the change was wanted, propose it upstream |
 | `ci.yml calls the standard by ref` fails | A caller was reverted to `uses: ./...`, or a local `_*.yml` came back |
-| Required check never completes | The check is `ci / test`, not `test` — a called workflow reports as `<caller job> / <called job>` |
+| Required check never completes | Either the check is `ci / test`, not `test` — a called workflow reports as `<caller job> / <called job>` — or you required a check from a path-filtered workflow. A skipped run reports no status, so the check stays pending forever |
 | Spec PR opens but never merges | `SDLC_BOT_TOKEN` is missing, so the PR author is `github-actions[bot]`, which cannot approve its own PR |
 | Template-update PR fails to push | `SDLC_BOT_TOKEN` lacks *Workflows* write; it has to rewrite the pinned refs |
 | One-person repo cannot merge anything | GitHub forbids approving your own PR. Either add a second reviewer, or require 0 approvals and let the status checks plus the merge button be the gate |

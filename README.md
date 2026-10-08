@@ -36,7 +36,7 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `.sdlc/scripts/make_manifest.sh` | Template repo only: re-hashes the invariant layer |
 | `.sdlc/monitoring/bands.json` | Response tier per sigma: what the agent may do at 1σ, 2σ and 3σ |
 | `.sdlc/monitoring/metrics.json` | Sample metric series — replace with a real source |
-| `.sdlc/evals/` | Regression tests for the agent configuration itself, run on changes to `CLAUDE.md` and `.claude/**` |
+| `.sdlc/evals/` | Regression tests for the agent configuration itself. Runs on every PR and decides internally whether anything relevant changed, so it is safe to require as a status check |
 | `.claude/settings.json` | Tool permissions plus the three hooks |
 | `.claude/hooks/protect-paths.sh` | `SDLC_STAGE=build` freezes `.sdlc/intent/` and `.sdlc/specs/`; `SDLC_FIX_MODE=1` freezes the paths named in `.sdlc/protected-paths.txt` |
 | `.claude/hooks/production-gate.sh` | Blocks a production deploy without `RELEASE_APPROVAL` |
