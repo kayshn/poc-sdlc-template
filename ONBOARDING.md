@@ -85,7 +85,7 @@ Two gates live only in GitHub settings and appear in no file in the repo.
 
 ## 5. Prove it — drive one change round the loop
 
-**[WORKFLOW.md](WORKFLOW.md) is the diagram**: the five actions a person performs, who performs each
+**[DEV-WORKFLOW.md](DEV-WORKFLOW.md) is the diagram**: the five actions a person performs, who performs each
 one, and where a change can be stopped. The walkthrough below is the same loop with the mechanics
 filled in.
 

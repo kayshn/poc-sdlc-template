@@ -50,7 +50,7 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `scripts/detect.sh` | Deterministic control-band detection in shell; the AI is only invoked on a breach |
 | `scripts/deploy.sh`, `scripts/rollback.sh` | Simulated — point them at a real target |
 | `ONBOARDING.md` | The adoption runbook. Delete it once the loop is turning |
-| `WORKFLOW.md` | The loop as a diagram: the five actions a person performs, and who performs each |
+| `DEV-WORKFLOW.md` | The loop as a diagram: the five actions a person performs, and who performs each |
 
 ## Two layers
 
@@ -91,7 +91,7 @@ jobs:
 adaptation, the GitHub settings that exist in no file here, how to drive the first change round the
 loop, and what each failure message means.
 
-**[WORKFLOW.md](WORKFLOW.md) is the diagram**: one change from idea to production, and which of the
+**[DEV-WORKFLOW.md](DEV-WORKFLOW.md) is the diagram**: one change from idea to production, and which of the
 steps a person performs.
 
 ### Stay current
