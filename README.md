@@ -37,7 +37,7 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `.claude/hooks/_lib.sh` | Reads the hook payload using whichever of `jq`, `python3` or `node` is present |
 | `.claude/skills/` | `write-intent`, `write-spec` (used by stages 1–2), `secure-api-review` (policy) |
 | `.claude/agents/verifier.md` | Subagent that runs the checks and reports, after a build |
-| `.github/workflows/` | `intent-to-spec`, `spec-to-build`, `claude`, `claude-review`, `ci`, `deploy`, `monitor`, `agent-evals` |
+| `.github/workflows/` | `intent-to-spec`, `spec-to-build`, `claude`, `claude-review`, `ci`, `deploy`, `monitor`, `agent-evals`. The four that carry a gate are split in two: `_ci.yml`, `_claude-review.yml`, `_deploy.yml` and `_agent-evals.yml` hold the body and are versioned; the unprefixed file is a thin caller that owns only the triggers |
 | `Makefile` | The one place the pipeline touches your stack. The workflows only ever call `make <target>` |
 | `scripts/detect.sh` | Deterministic control-band detection in shell; the AI is only invoked on a breach |
 | `scripts/deploy.sh`, `scripts/rollback.sh` | Simulated — point them at a real target |
@@ -57,7 +57,7 @@ git init && git add -A && git commit -m "SDLC scaffolding"
    - `SDLC_BOT_TOKEN` — a fine-grained PAT for this repo with *Contents*, *Pull requests* and *Issues* read/write. PRs opened with the default `GITHUB_TOKEN` **do not trigger other workflows**, so without this the spec and monitor PRs get no CI or review. Workflows fall back to `GITHUB_TOKEN`.
 3. **Allow Actions to create and approve pull requests** (Settings → Actions → General), and **Allow auto-merge** (Settings → General). Both are needed for spec auto-approval.
 4. **Create a `production` environment** with **required reviewers** — this is the release gate. Without reviewers, merges to `main` deploy straight through.
-5. **Protect `main`**: require a PR, one code-owner approval, and the `test` status check. Add `evals` as a required check to gate agent-configuration changes.
+5. **Protect `main`**: require a PR, one code-owner approval, and the `ci / test` status check. Add `evals / suite` as a required check to gate agent-configuration changes. (A called workflow reports its job as `<caller job> / <called job>`, which is why the names are compound.)
 
 Two gates live only in GitHub settings and appear in no file here: *allow Actions to create PRs*, and the `production` environment reviewers.
 
@@ -66,8 +66,14 @@ Two gates live only in GitHub settings and appear in no file here: *allow Action
 The template ships with `make lint` and `make test` failing on purpose: a green check that ran
 nothing is worse than a red one. Work down this list until CI is green.
 
-1. **`Makefile`** — the only file the pipeline uses to reach your stack. The workflows call `install`, `lint`, `test`, `flow-check`, `evals` and `detect` by name; keep the names, replace the bodies. Leave everything below the "nothing below this line is stack-specific" marker alone.
-2. **`.github/workflows/`** — add your toolchain where each file says `TEMPLATE:` (`ci.yml`, `claude.yml`, `agent-evals.yml`). Nothing else in the workflows is stack-specific.
+1. **`Makefile`** — the only file the pipeline uses to reach your stack. The workflows call `install`, `lint`, `test`, `flow-check`, `evals` and `detect` by name; keep the names, replace the bodies. Leave everything below the "nothing below this line is stack-specific" marker alone. There is no toolchain setup in the workflows: GitHub's Ubuntu runners preinstall `python3`, `node`, `jq`, `awk` and `yq`, so `make install` provisions everything else — a virtualenv, a JDK, whatever the project needs.
+2. **`.github/workflows/`** — nothing here is stack-specific. The four files with a `_`-prefixed twin (`ci`, `claude-review`, `deploy`, `agent-evals`) are thin callers: edit their triggers, not their bodies. To consume the standard by version instead of by copy, point each `uses:` at a tag and delete the local `_*.yml`:
+   ```yaml
+   jobs:
+     ci:
+       uses: kayshn/poc-sdlc-template/.github/workflows/_ci.yml@v1
+       secrets: inherit
+   ```
 3. **`CLAUDE.md`** — fill in every `<...>`. The *Conventions* and *Things the agent gets wrong* sections are what actually steer the agent; be specific and name real symbols, not principles.
 4. **`.sdlc/REVIEW.md`** — rewrite the *Security* bullet for this project's real risks.
 5. **`.claude/skills/secure-api-review/SKILL.md`** — rewrite in terms of this project's own helpers and types, or delete it (and its references in `CLAUDE.md`, `.sdlc/REVIEW.md`, `claude-review.yml`, `flow.yaml` and `write-spec`). Add a skill per policy you want enforced at design time.

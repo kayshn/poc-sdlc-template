@@ -34,7 +34,8 @@ jobs:
         with:
           fetch-depth: 1
 
-      # TEMPLATE: add this project's toolchain here so the agent can run lint and tests.
+      # The Makefile is the only seam to this project's stack; `install` provisions the toolchain
+      # so the agent can run lint and tests.
       - run: make install
 
       - uses: anthropics/claude-code-action@v1

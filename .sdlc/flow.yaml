@@ -56,7 +56,8 @@ stages:
     by: pipeline
     review: claude-review.yml # comments only, never approves
     gate:
-      check: test
+      # ci.yml is a thin caller of _ci.yml, so the check reports as "<caller job> / <called job>".
+      check: ci / test
       enforced_by: required status check on main
 
   deploy:

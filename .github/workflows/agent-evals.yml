@@ -1,6 +1,10 @@
 # Stage 4: the configuration that steers the agent (CLAUDE.md, skills, hooks) is regression-tested
 # like code. No nightly schedule: runs count against the Claude subscription's limits.
-# Make the "evals" check required in branch protection to gate config changes on it.
+# Make the "evals / suite" check required in branch protection to gate agent-configuration changes.
+#
+# Thin caller — yours to edit. The path filter below is repo-specific; the body is the standard and
+# lives in _agent-evals.yml. In a consumer repo replace the `uses:` line with the pinned form:
+#   uses: kayshn/poc-sdlc-template/.github/workflows/_agent-evals.yml@v1
 name: Agent evals
 
 on:
@@ -13,24 +17,5 @@ permissions:
 
 jobs:
   evals:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v6
-
-      # TEMPLATE: add this project's toolchain here — eval cases run `make lint` and `make test`.
-      - run: make install
-      - run: npm install -g @anthropic-ai/claude-code
-      - name: Run eval suite
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          MIN_PASS_RATE: "0.66"
-        run: |
-          git config --global user.name evals
-          git config --global user.email evals@users.noreply.github.com
-          ./.sdlc/evals/run_evals.sh | tee -a "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: eval-results
-          path: eval-results/
+    uses: ./.github/workflows/_agent-evals.yml
+    secrets: inherit
