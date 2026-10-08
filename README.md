@@ -105,7 +105,7 @@ nothing is worse than a red one. Work down this list until CI is green.
    ```yaml
    jobs:
      ci:
-       uses: kayshn/poc-sdlc-template/.github/workflows/_ci.yml@v1
+       uses: kayshn/poc-sdlc-template/.github/workflows/_ci.yml@v1.0.0
        secrets: inherit
    ```
 3. **`CLAUDE.md`** — fill in every `<...>`. The *Conventions* and *Things the agent gets wrong* sections are what actually steer the agent; be specific and name real symbols, not principles.

@@ -4,7 +4,7 @@
 #
 # Thin caller — yours to edit. The triggers below are repo-specific; the body is the standard and
 # lives in _deploy.yml. In a consumer repo replace the `uses:` line with the pinned form:
-#   uses: kayshn/poc-sdlc-template/.github/workflows/_deploy.yml@v1
+#   uses: kayshn/poc-sdlc-template/.github/workflows/_deploy.yml@v1.0.0
 name: Deploy
 
 on:

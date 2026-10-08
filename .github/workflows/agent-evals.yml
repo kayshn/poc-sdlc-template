@@ -4,7 +4,7 @@
 #
 # Thin caller — yours to edit. The path filter below is repo-specific; the body is the standard and
 # lives in _agent-evals.yml. In a consumer repo replace the `uses:` line with the pinned form:
-#   uses: kayshn/poc-sdlc-template/.github/workflows/_agent-evals.yml@v1
+#   uses: kayshn/poc-sdlc-template/.github/workflows/_agent-evals.yml@v1.0.0
 name: Agent evals
 
 on:
