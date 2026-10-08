@@ -54,6 +54,24 @@ Design constraints:
 - **Support a private template source.** `sdlc_update.sh` fetches with anonymous
   `curl https://codeload.github.com/...` and `latest_tag` uses anonymous `git ls-remote`. Both fail
   against a private template, so any team unwilling to publish its standard cannot adopt this.
+  Both should read `GH_TOKEN` or `SDLC_BOT_TOKEN` and fall back to anonymous.
+
+  Fixing that alone is not enough. **A public repository cannot call a private repository's
+  reusable workflow**, even with Settings → Actions → Access set to *accessible from repositories
+  owned by the user*: that setting shares with private repositories only. Verified on 2026-10-08 —
+  a dispatch failed to parse with `workflow was not found` 45 seconds after the setting was
+  applied. So the visibility of the template constrains the visibility of every consumer:
+
+  | Template | Consumer | Result |
+  |---|---|---|
+  | public | public | works |
+  | public | private | works; needs a paid plan for `production` environment reviewers |
+  | private | private | needs the token fix above, and a paid plan |
+  | private | **public** | **impossible** |
+
+  The last row is the one to warn adopters about, because the free-plan trap compounds it: a
+  private consumer on GitHub Free silently loses its `production` environment protection rules,
+  which is the stage-5 release gate.
 - **Template-upgrade PRs get no AI review.** `claude-code-action` refuses to run when a workflow
   file differs from the version on the default branch. `sdlc_update.sh` rewrites the pinned refs in
   the callers, so every upgrade PR trips that check. CI and evals still run; only the review is
