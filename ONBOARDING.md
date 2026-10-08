@@ -85,49 +85,9 @@ Two gates live only in GitHub settings and appear in no file in the repo.
 
 ## 5. Prove it — drive one change round the loop
 
-A solid outline is a step someone performs. A dashed outline happens on its own.
-
-```mermaid
-flowchart TD
-    I["Write .sdlc/intent/NNN-name.md<br/>Open a pull request and merge it"]
-    S["Spec written, approved and merged"]
-    B["Build issue opens,<br/>quoting the spec's areas of concern"]
-    G{"Spec accepted?"}
-    X["Close the issue.<br/>Nothing is built."]
-    C["Comment @claude on the issue"]
-    P["Plan, code and tests<br/>pushed to a branch"]
-    O["Open the pull request<br/>from the agent's branch"]
-    R["CI runs. The AI review posts findings.<br/>It never approves."]
-    G2{"Ready to merge?"}
-    F["Comment @claude fix this"]
-    M["Merge the pull request"]
-    D["Deployment waits for release approval"]
-    A["Approve the deployment"]
-    L(["Live in production"])
-
-    I --> S --> B --> G
-    G -- no --> X
-    G -- yes --> C --> P --> O --> R --> G2
-    G2 -- no --> F --> R
-    G2 -- yes --> M --> D --> A --> L
-
-    classDef auto stroke-dasharray: 5 5
-    class S,B,P,R,D auto
-```
-
-**Five actions, one slug.** Everything between them is automatic, and nothing reaches production
-without a person acting:
-
-| # | Action | Where | Who |
-|---|---|---|---|
-| 1 | Write the intent, open a pull request, merge it | `.sdlc/intent/<slug>.md` | author, then code owner |
-| 2 | Comment `@claude` to accept the spec and start the build | the Build issue | product owner |
-| 3 | Open the pull request from the agent's branch | the *Create PR* link | author |
-| 4 | Merge once CI and the review look right | the pull request | code owner |
-| 5 | Approve the release | the `production` environment | release manager |
-
-Step 2 is the one to understand: it is where a spec is rejected, by closing the issue instead of
-commenting. A design exists by then, but nothing has been built.
+**[WORKFLOW.md](WORKFLOW.md) is the diagram**: the five actions a person performs, who performs each
+one, and where a change can be stopped. The walkthrough below is the same loop with the mechanics
+filled in.
 
 ### The same thing in words
 
