@@ -1,8 +1,8 @@
-# The workflows call these targets by name: install, lint, test, flow-check, evals, detect.
-# Keep the names; replace the bodies with whatever this project's stack needs.
+# The workflows call these targets by name: install, lint, test, flow-check, template-check,
+# evals, detect. Keep the names; replace the bodies with whatever this project's stack needs.
 # `lint` and `test` deliberately fail until you wire them up — a green check that ran nothing is
 # worse than a red one.
-.PHONY: install lint test format run flow-check evals detect
+.PHONY: install lint test format run flow-check template-check evals detect manifest sdlc-update
 
 install:
 	@echo "TODO: install dependencies (npm ci / mvn verify -DskipTests / go mod download / ...)"
@@ -23,6 +23,17 @@ run:
 
 flow-check:
 	./.sdlc/scripts/check_flow.sh
+
+template-check:
+	./.sdlc/scripts/check_template.sh
+
+# Upgrade the invariant layer. Not part of `install`: CI verifies, humans upgrade.
+sdlc-update:
+	./.sdlc/scripts/sdlc_update.sh
+
+# Template repo only: re-hash the invariant layer after changing it.
+manifest:
+	./.sdlc/scripts/make_manifest.sh
 
 evals:
 	./.sdlc/evals/run_evals.sh

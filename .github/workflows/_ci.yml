@@ -24,6 +24,8 @@ jobs:
 
       - name: Check the SDLC flow declaration
         run: make flow-check
+      - name: Check conformance to the SDLC template
+        run: make template-check
       - name: Lint
         shell: bash
         run: make lint 2>&1 | tee -a ci.log
