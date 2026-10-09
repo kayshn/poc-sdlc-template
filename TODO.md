@@ -43,16 +43,27 @@ reading it.
 
 ## Known defects
 
-- **Fixes to a workflow body never reach an existing consumer.** Four workflows carry real logic in
-  a file the project owns: `intent-to-spec.yml`, `spec-to-build.yml`, `claude.yml` and
-  `monitor.yml`. Only the trigger is repo-specific; the rest is the standard. `sdlc_update.sh`
-  rewrites a caller's `uses:` ref and nothing else, so a change to the body is announced in release
-  notes and silently not delivered.
+- **Every consumer needs one `--rewire` after taking the release that splits the last four
+  workflows.** `sdlc_update.sh` is itself part of the invariant layer, so the copy that runs an
+  upgrade is always the one installed *before* it. The release that teaches the script to migrate a
+  full-body workflow into a thin caller is therefore run by a script that cannot do it. The new
+  `check_template.sh` arrives in the same upgrade and fails the upgrade PR with the remedy in the
+  message:
 
-  Two shipped fixes were found undelivered on 2026-10-09, in a consumer that reported
-  `template-check` green and was pinned to the newest tag:
+      ./.sdlc/scripts/sdlc_update.sh --rewire
 
-  | Fix | Released | Still missing in the consumer |
+  One command, once, and only for repositories created before that release. Every later body
+  extraction migrates on its own, because the migration code is by then already installed.
+
+Fixed in the release that splits `intent-to-spec`, `spec-to-build`, `claude` and `monitor`:
+
+- **Fixes to a workflow body never reach an existing consumer.** Those four carried real logic in a
+  file the project owned, so `sdlc_update.sh` — which rewrites a caller's `uses:` ref and nothing
+  else — announced a change to the body in the release notes and silently did not deliver it. Two
+  shipped fixes were found undelivered on 2026-10-09 in a consumer that reported `template-check`
+  green and was pinned to the newest tag:
+
+  | Fix | Released | Was still missing in the consumer |
   |---|---|---|
   | `agent-evals.yml` trigger, so `evals / suite` is safe to require | `v1.2.0` | the path filter was still there, so the check never ran and could not be required |
   | `--unless` race guard in `intent-to-spec.yml` | `v1.7.0` | the call had no guard |
@@ -60,11 +71,14 @@ reading it.
   The first is the more serious: a team following the guide would have required a check that never
   reports and blocked every pull request in the repository.
 
-  The fix is to split those four the way `ci`, `claude-review`, `deploy`, `agent-evals` and
-  `sdlc-update` are already split — body in a `_*.yml` callable, triggers in the caller — so that
-  only the triggers remain project-owned. That is a breaking change for consumers and belongs in a
-  major version. Until then, `check_template.sh` should compare each caller's body against the
-  pinned tag and fail on drift, so at least it is visible.
+  All nine workflows are now split — body in a `_*.yml` callable pulled by tag, triggers in a
+  caller the project owns — so nothing a fix could need to reach is left behind. `sdlc_update.sh`
+  replaces a legacy full-body caller with the standard's thin one, and `check_template.sh` fails
+  any caller that still declares `runs-on:` or `steps:`.
+
+  Two things moved with the bodies and are no longer the project's to lose: the `@claude` mention
+  test, and the tools the build agent is allowed. The latter is now the `allowed_tools` input of
+  `_claude.yml`, so a project extends the set in its caller rather than holding a copy of it.
 
 Previously recorded and fixed in `v1.7.0`: `open_pr.sh` discarding generated work on failure,
 reporting a push rejection as a bare `exit 128`, opening a pull request that could never merge when
@@ -72,9 +86,9 @@ two runs raced, and the build agent being told to run checks it was not permitte
 
 Two notes survive those fixes:
 
-- **`.claude/settings.json` and `claude.yml` are project-owned**, so the permission half of that
-  last fix does not reach a repository created before `v1.7.0`. Such a repository must add
-  `Bash(make flow-check)` and `Bash(make template-check)` itself.
+- **`.claude/settings.json` is project-owned**, so the settings half of that last fix does not reach
+  a repository created before `v1.7.0`. Such a repository must add `Bash(make flow-check)` and
+  `Bash(make template-check)` itself. The workflow half now travels in `_claude.yml`.
 - **`--unless` guards the artefact, not the agent run.** The losing run still generates a spec and
   pays for it before bowing out. Stopping earlier would mean checking at the start, which races
   differently.

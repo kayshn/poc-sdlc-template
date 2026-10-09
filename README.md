@@ -45,7 +45,7 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `.sdlc/scripts/trust_workspace.sh` | Marks a checkout trusted so Claude Code actually applies `.claude/settings.json`. Without it, CI silently runs with no hooks |
 | `.claude/skills/` | `write-intent`, `write-spec` (used by stages 1–2), `secure-api-review` (policy) |
 | `.claude/agents/verifier.md` | Subagent that runs the checks and reports, after a build |
-| `.github/workflows/` | `intent-to-spec`, `spec-to-build`, `claude`, `claude-review`, `ci`, `deploy`, `monitor`, `agent-evals`, `sdlc-update`. The five that carry a gate are split in two: `_ci.yml`, `_claude-review.yml`, `_deploy.yml`, `_agent-evals.yml` and `_sdlc-update.yml` hold the body and are versioned; the unprefixed file is a thin caller that owns only the triggers |
+| `.github/workflows/` | `intent-to-spec`, `spec-to-build`, `claude`, `claude-review`, `ci`, `deploy`, `monitor`, `agent-evals`, `sdlc-update`. Every one of them is split in two: the `_`-prefixed file holds the body and is versioned; the unprefixed file is a thin caller that owns only the triggers. Nothing a fix could need to reach is left in a file the project owns |
 | `Makefile` | The one place the pipeline touches your stack. The workflows only ever call `make <target>` |
 | `scripts/detect.sh` | Deterministic control-band detection in shell; the AI is only invoked on a breach |
 | `scripts/deploy.sh`, `scripts/rollback.sh` | Simulated — point them at a real target |

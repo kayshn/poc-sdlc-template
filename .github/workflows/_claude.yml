@@ -1,0 +1,52 @@
+# Invariant — part of the AI-native SDLC standard. Pulled by tag; do not edit in a consumer repo.
+# The triggers live in the caller, .github/workflows/claude.yml.
+#
+# @claude on an issue or PR: Claude builds from a Build issue, or addresses review comments
+# and pushes fixes. Everything it writes lands on a branch / PR behind branch protection.
+#
+# The mention test lives here rather than in the caller: which events carry a mention is part of
+# the standard, and a project that held its own copy of it would stop receiving corrections to it.
+name: Claude (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      allowed_tools:
+        description: >
+          Tools the agent may use. The default is the standard's set; extend it only to add this
+          project's own commands, and keep the entries that are already here.
+        type: string
+        default: Skill,Bash(make test),Bash(make lint),Bash(make format),Bash(make flow-check),Bash(make template-check)
+      runner:
+        description: Runner label for the agent job.
+        type: string
+        default: ubuntu-latest
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && contains(format('{0} {1}', github.event.issue.title, github.event.issue.body), '@claude'))
+    runs-on: ${{ inputs.runner }}
+    env:
+      SDLC_STAGE: build # hooks make .sdlc/intent/ and .sdlc/specs/ read-only
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      # The Makefile is the only seam to this project's stack; `install` provisions the toolchain
+      # so the agent can run lint and tests.
+      - run: make install
+
+      # A fresh checkout is untrusted, which makes Claude Code ignore .claude/settings.json and
+      # with it the hooks that freeze .sdlc/intent/ and .sdlc/specs/ during a build.
+      - run: ./.sdlc/scripts/trust_workspace.sh "$GITHUB_WORKSPACE"
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: |
+            --allowedTools "${{ inputs.allowed_tools }}"
