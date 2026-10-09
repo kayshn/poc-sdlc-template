@@ -59,7 +59,12 @@ first_install=0
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 echo "Fetching $source_repo $ref"
-curl -fsSL "https://codeload.github.com/$source_repo/tar.gz/refs/tags/$ref" | tar -xzf - -C "$tmp"
+# The API tarball endpoint rather than codeload's /tar.gz path: the latter is eventually consistent
+# and 404s for a tag created moments ago, while the API redirects to the archive that exists now.
+# It also takes a token, which codeload does not, so a private source only needs one set here.
+auth=()
+[ -z "${GH_TOKEN:-${SDLC_BOT_TOKEN:-}}" ] || auth=(-H "Authorization: Bearer ${GH_TOKEN:-$SDLC_BOT_TOKEN}")
+curl -fsSL "${auth[@]}" "https://api.github.com/repos/$source_repo/tarball/$ref" | tar -xzf - -C "$tmp"
 src=$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -1)
 [ -n "$src" ] || {
   echo "$source_repo $ref does not look like a template archive." >&2
