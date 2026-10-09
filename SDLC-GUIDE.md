@@ -251,6 +251,23 @@ path the project owns — or takes over a file the project used to own — decla
   `--accept-promotions` is the escape hatch: it takes the standard's version and leaves yours on
   disk to port later, and `make template-check` fails until that copy is gone.
 
+## Keeping a local difference
+
+Some of what a project receives has a seam for project-specific behaviour, so that a local need does
+not have to become a local copy. A copy is the expensive choice: it is frozen at the version it was
+taken from, and no later fix can reach it.
+
+| Instead of editing | Put it here |
+|---|---|
+| `.sdlc/REVIEW.md` | `.sdlc/REVIEW.local.md` — extra passes, run after the standard ones |
+| `.sdlc/standards/engineering-guardrails.md` | `.sdlc/standards/project-guardrails.md` — numbered `P1`, `P2`, so a review can cite one without ambiguity |
+| `.claude/hooks/format-on-edit.sh` | `make format-file FILE=<path>` — the hook calls it after every agent edit |
+| `.claude/agents/verifier.md` | `make verify` — how this project exercises behaviour directly |
+| a workflow body | the caller's triggers, or an input to the callable |
+
+Both `.sdlc/REVIEW.local.md` and `project-guardrails.md` are optional; nothing fails if they are
+absent. `make format-file` and `make verify` ship as stubs that print a TODO.
+
 **Three things to expect:**
 
 - **The upgrade pull request gets no AI review.** `claude-code-action` refuses to run when a workflow

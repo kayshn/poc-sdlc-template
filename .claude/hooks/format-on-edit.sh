@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
-# PostToolUse(Edit|Write): keep formatting drift at zero. Fast, scoped to the edited file, never blocks.
-# TEMPLATE: uncomment or add the formatter for each file type this project uses. Keep it quiet and
-# keep `exit 0` — a formatter failure must never block the agent.
+# PostToolUse(Edit|Write): keep formatting drift at zero. Fast, scoped to the edited file, never
+# blocks. What to run is `make format-file` in this project's Makefile, so this hook stays the same
+# in every project and arrives with each template release.
 source "$(dirname "$0")/_lib.sh"
 payload=$(cat)
 path=$(field "$payload" tool_input.file_path)
 [ -f "$path" ] || exit 0
 
-case "$path" in
-  # *.py)            ruff format -q "$path" && ruff check -q --fix "$path" ;;
-  # *.ts|*.tsx|*.js) npx --no-install prettier --write "$path" ;;
-  # *.go)            gofmt -w "$path" ;;
-  # *.rs)            rustfmt "$path" ;;
-  # *.java)          ;;
-  *) ;;
-esac >/dev/null 2>&1
+cd "$(dirname "$0")/../.." || exit 0
+# Output and status are both discarded: a formatter that is missing, slow to fail or merely noisy
+# must never interrupt the agent mid-edit.
+make format-file FILE="$path" >/dev/null 2>&1
 exit 0

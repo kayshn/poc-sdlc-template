@@ -29,6 +29,7 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `.sdlc/protected-paths.txt` | Path prefixes the agent may not edit while fixing a bug. Yours to point at your test directory |
 | `.sdlc/intent/_TEMPLATE.md`<br>`.sdlc/specs/_TEMPLATE.md`<br>`.sdlc/plans/_TEMPLATE.md` | The artefact shapes for stages 1, 2 and 3 |
 | `.sdlc/standards/engineering-guardrails.md` | The rules the agent is held to, G1–G6. Invariant: `CLAUDE.md` imports it into every session and the *Guardrails* review pass checks each diff against it |
+| `.sdlc/standards/project-guardrails.md` | The same job for rules only this project needs, numbered `P1`, `P2`. Yours; the seam that keeps the file above untouched |
 | `.sdlc/architecture/container.md` | The one high-level view of the system, named by `stages.design.diagram`. G6 makes the design stage amend it or state in the spec that nothing moved; `check_flow.sh` fails a spec that does neither |
 | `.sdlc/REVIEW.md` | The four review passes the AI reviewer runs on every PR |
 | `.sdlc/scripts/next_intent_number.sh` | Next slug number |

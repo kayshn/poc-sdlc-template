@@ -7,14 +7,16 @@
 <One or two sentences: what this is, who it serves.>
 
 <!-- Loads the engineering guardrails into every session. Keep this line: `make template-check`
-     fails without it. Add @.sdlc/standards/project-guardrails.md below for this stack's own rules. -->
+     fails without it. The second line is this project's own rules, and is yours to fill in. -->
 @.sdlc/standards/engineering-guardrails.md
+@.sdlc/standards/project-guardrails.md
 
 ## Commands
 - Install: `make install`
 - Test: `make test` (healthy output: <what a passing run ends with>)
 - Lint: `make lint` (healthy output: <what a clean run ends with>)
 - Auto-fix formatting: `make format`
+- Exercise the app directly: `make verify`
 - Run: `make run`
 - SDLC flow declaration check: `make flow-check`
 

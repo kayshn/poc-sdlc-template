@@ -2,7 +2,7 @@
 # evals, detect. Keep the names; replace the bodies with whatever this project's stack needs.
 # `lint` and `test` deliberately fail until you wire them up — a green check that ran nothing is
 # worse than a red one.
-.PHONY: install lint test format run flow-check template-check evals detect manifest sdlc-update
+.PHONY: install lint test format format-file verify run flow-check template-check evals detect manifest sdlc-update
 
 install:
 	@echo "TODO: install dependencies (npm ci / mvn verify -DskipTests / go mod download / ...)"
@@ -15,6 +15,16 @@ test:
 
 format:
 	@echo "TODO: wire up the formatter for this project"
+
+# One file, called by the format-on-edit hook after every agent edit. Keep it fast and quiet; its
+# output and exit status are discarded so that a formatter can never interrupt the agent.
+format-file:
+	@echo "TODO: format just $(FILE)"
+
+# Exercise the app directly, not through the test suite: call the endpoint, drive the CLI, run the
+# job against a fixture. The verifier agent runs this before a session reports done.
+verify:
+	@echo "TODO: wire up a direct exercise of this project's behaviour"
 
 run:
 	@echo "TODO: start the application"

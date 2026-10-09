@@ -32,6 +32,7 @@ jobs:
             PR NUMBER: ${{ github.event.pull_request.number }}
 
             Review this pull request following .sdlc/REVIEW.md exactly. The PR branch is checked out.
+            If .sdlc/REVIEW.local.md exists, run its passes too, after the ones in .sdlc/REVIEW.md.
             Identify the change's slug from the PR title, branch or changed files, and check the
             diff against .sdlc/specs/<slug>.md and .sdlc/plans/<slug>.md (say so if either is missing).
             Apply CLAUDE.md conventions and the secure-api-review skill.

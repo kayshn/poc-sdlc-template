@@ -32,3 +32,9 @@ Anything `make lint` already enforces, and anything under a dependency or build-
 ## Output
 Finish with one top-level comment that ends in a machine-readable tally line:
 `REVIEW-TALLY important=<n> nit=<n>`
+
+## Adding a pass of your own
+Put it in `.sdlc/REVIEW.local.md`, not here. The reviewer runs that file's passes after these ones,
+and a release can improve the four above without reverting your work or stopping to ask. Tag its
+findings with its own pass name so a reader can tell which rulebook a finding came from, and let it
+end without a tally — the tally line belongs to this file.
