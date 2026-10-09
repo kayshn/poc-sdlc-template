@@ -2,6 +2,33 @@
 
 Deferred work on the template itself. Not part of the standard a consumer receives.
 
+## Known defects
+
+Observed, reproducible, not yet fixed. Distinct from the deferred work below, which is absent
+rather than broken.
+
+- **`open_pr.sh` throws away the agent's work when the push fails.** The expensive step runs first,
+  then `git push`. A credential problem discards a spec that has already been generated and paid
+  for. Observed 2026-10-08: a 403 lost a complete spec and the run had to be repeated. It should
+  upload the artefact, or write it somewhere the next run can pick up.
+- **`open_pr.sh` reports a push failure as a bare `exit 128`.** A 403 on push has essentially one
+  cause — the token lacks *Contents: write* — and the script should say so with `::error::` rather
+  than leaving the operator to read the raw log.
+- **`open_pr.sh` does not re-check before pushing.** Two concurrent runs both generated a spec for
+  the same slug, and the loser opened a pull request that could never merge. `concurrency:` does
+  not cover a re-run of a completed run racing a fresh dispatch. The script should check
+  `origin/main` for the artefact immediately before pushing and exit cleanly if it is already there.
+- **The build agent is told to run checks it is not allowed to run.** `CLAUDE.md` lists
+  `make flow-check` and `make template-check` as project commands, but neither
+  `.claude/settings.json` nor `claude.yml`'s `--allowedTools` permits them. Every build reports them
+  as unrun. Either permit them — they are read-only — or stop listing them for the agent.
+
+## Untested
+
+- **`@claude fix this`.** The iterate path in stage 4 has never been exercised. Everything else in
+  the loop has now run at least once.
+- **Stage 6, maintain.** `monitor.yml` and the σ-breach path have never run.
+
 ## Script the GitHub settings (`setup_github.sh`)
 
 Two gates — the `production` environment's required reviewers, and *allow Actions to create and
