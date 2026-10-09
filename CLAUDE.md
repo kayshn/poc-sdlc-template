@@ -6,6 +6,8 @@
 
 <One or two sentences: what this is, who it serves.>
 
+<!-- Loads the engineering guardrails into every session. Keep this line: `make template-check`
+     fails without it. Add @.sdlc/standards/project-guardrails.md below for this stack's own rules. -->
 @.sdlc/standards/engineering-guardrails.md
 
 ## Commands

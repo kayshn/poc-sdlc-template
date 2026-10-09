@@ -5,8 +5,29 @@ Removed from a repository created from this template on first install.
 
 ## Where things stand (2026-10-09)
 
-Both repositories are clean and on `v2.0.0`. `flow-check`, `template-check`, `lint` and `test` all
-pass in the consumer. Nothing is half-done.
+Both repositories are on `v2.2.0`. `flow-check`, `template-check`, `lint` and `test` all pass in the
+consumer. One lap is in flight: slug `002-link-follow-count` has reached the Build issue, and
+nothing has been built from it yet.
+
+**`v2.1.0` and `v2.2.0`.** `v2.1.0` added the *Claims about what was run* rule to `.sdlc/REVIEW.md`,
+after a build agent's unverified refusal was repeated by the reviewer as fact — see *Known defects*.
+`v2.2.0` added the engineering guardrails: `.sdlc/standards/engineering-guardrails.md` holds G1–G5
+and is invariant, while the two things that make it bite — the `@`-import line in `CLAUDE.md` and
+the *Guardrails* pass in `.sdlc/REVIEW.md` — belong to the project and are enforced by
+`check_template.sh`. Wiring costs a consumer two edits, once; every later revision of the rules then
+arrives for free. `invariant.txt` names the guardrails *file* and not the `.sdlc/standards/`
+directory on purpose: a directory entry is `find`-expanded, so it would sweep a consumer's own
+`project-guardrails.md` into the manifest and fail that consumer's drift check.
+
+**The guardrails reach the reviewer in CI, and that is all that is proven.** The review on the `002`
+intent pull request emitted a *Guardrails* pass naming G1–G5, and the guardrails file was not in
+that diff, so it came from the repository rather than the change. Two things remain unproven: that
+a guardrail bites on real code — a clean pass over a Markdown-only intent is vacuous — and that the
+*build* agent has the rules in session without being told to look, which is the half that matters,
+because nothing in its prompt mentions them. The build pull request for `002` is that test: look for
+a guardrail cited by id in the agent's own plan and description, not only in the review. An upgrade
+pull request can never settle it, since it rewrites the pinned refs and `claude-code-action` then
+declines to run.
 
 **Repositories.** `kayshn/poc-sdlc-template` (public, template repo, topic `ai-sdlc`) and
 `kayshn/poc-sdlc-consumer-app` (public, a FastAPI URL shortener). Both must stay public: a public
@@ -170,6 +191,46 @@ Design constraints:
   stored as a repo secret in order to configure secrets — chicken-and-egg — and would leave every
   consumer holding a credential that can rewrite its own branch protection. Running locally against
   the adopter's own `gh` auth means no admin credential is stored anywhere.
+
+## The design gate has nothing standing on it
+
+Found on 2026-10-09 by the `002-link-follow-count` lap, on `v2.2.0`. The spec pull request is the
+only gate in the loop with no person on it — `.sdlc/flow.yaml` sets `stages.design.gate.approval`
+to `auto` and the pipeline grants the approval. The AI review ran on that pull request, raised two
+**Important** findings, and the pull request auto-merged anyway, unlocking the Build issue. A
+review whose findings cannot change the outcome is decoration.
+
+The two findings, both substantive:
+
+- *Compliance* — the spec carried `Status: approved (auto)` while its own last line said an
+  unresolved question "blocks approval of the spec". Both cannot hold.
+- *Security* — the spec planned a state-changing anonymous route with no `store.record`, waiving
+  `secure-api-review` rule 4 and a `CLAUDE.md` convention. The reasoning was sound; a spec waiving
+  a project convention on its own authority is not.
+
+Four pieces of work, smallest first. The last is the only one that needs a gate at all:
+
+- **G6: a spec may not relax a rule.** A spec, plan or build that needs a `CLAUDE.md` convention, a
+  skill rule or a guardrail changed must propose that amendment as its own change and block on it.
+  Belongs in `.sdlc/standards/engineering-guardrails.md`, where it binds the spec *author* rather
+  than being caught afterwards by the reviewer. Cheapest, prevents the class, and the provenance is
+  real: the loop found it.
+- **An approved spec cannot have open questions.** Deterministic, no model needed — the
+  contradiction above is two fields of one artefact disagreeing. A `check_flow.sh`-shaped assertion
+  over `.sdlc/specs/<slug>.md`.
+- **An accepted risk needs a named owner.** `_TEMPLATE.md` should require a name in the risk
+  section, and empty should fail. "Accepted risk" with nobody accepting it is the same laundering
+  of an unowned claim as the refusal defect above.
+- **`review-gate`: `important > 0` withholds the automatic approval.** Not "Important blocks
+  merge" — that would hand the model a veto over people. It fails closed and a human still merges,
+  so the agent can stop a gate but never pass one, which is the existing rule unchanged. Read only
+  the `REVIEW-TALLY important=<n> nit=<n>` line; the moment the gate parses the review body, the
+  model's formatting becomes load-bearing. Two details decide whether it is real:
+  - **Scope it to spec pull requests.** A blanket gate blocks every `chore: SDLC template vX.Y.Z`
+    upgrade for good, because those are exactly the pull requests where `claude-code-action`
+    refuses to run.
+  - **No tally must fail, not pass.** Otherwise the gate evaporates in precisely the case where the
+    review was skipped — which the workflow-file-differs quirk guarantees will happen.
 
 ## Also deferred
 

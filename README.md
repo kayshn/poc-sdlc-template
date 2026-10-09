@@ -27,7 +27,8 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `.sdlc/TEMPLATE_VERSION` | Which tag of the standard this project is on. Absent in the template repo itself |
 | `.sdlc/protected-paths.txt` | Path prefixes the agent may not edit while fixing a bug. Yours to point at your test directory |
 | `.sdlc/intent/_TEMPLATE.md`<br>`.sdlc/specs/_TEMPLATE.md`<br>`.sdlc/plans/_TEMPLATE.md` | The artefact shapes for stages 1, 2 and 3 |
-| `.sdlc/REVIEW.md` | The three review passes the AI reviewer runs on every PR |
+| `.sdlc/standards/engineering-guardrails.md` | The rules the agent is held to, G1–G5. Invariant: `CLAUDE.md` imports it into every session and the *Guardrails* review pass checks each diff against it |
+| `.sdlc/REVIEW.md` | The four review passes the AI reviewer runs on every PR |
 | `.sdlc/scripts/next_intent_number.sh` | Next slug number |
 | `.sdlc/scripts/open_pr.sh` | Deterministic commit + PR, used by the workflows so the agent only ever writes files |
 | `.sdlc/scripts/check_flow.sh` | Fails if `flow.yaml` names a missing workflow or template, or marks a gate `auto` that the pipeline cannot automate. Run by CI as its own step, independent of your test runner |
@@ -56,11 +57,17 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 The loop splits into a part you receive and a part you own, and the split is a file, not a convention:
 
 - **The standard.** Every path named in `.sdlc/invariant.txt` — the shell machinery, the hooks that
-  stop the agent passing a gate, the eval that proves they block — plus the `_*.yml` workflow bodies.
-  You pull these at a tag; `ci / test` fails if they have been edited locally.
+  stop the agent passing a gate, the eval that proves they block, the engineering guardrails the
+  agent is held to — plus the `_*.yml` workflow bodies. You pull these at a tag; `ci / test` fails
+  if they have been edited locally.
 - **Your project.** Everything else: the `Makefile` bodies, `CLAUDE.md`, the `_TEMPLATE.md` artefacts,
-  `flow.yaml`, `bands.json`, `scripts/deploy.sh`, `.claude/skills/`, `.claude/settings.json` and the
-  thin caller workflows. The template seeds these once and never touches them again.
+  `.sdlc/REVIEW.md`, `flow.yaml`, `bands.json`, `scripts/deploy.sh`, `.claude/skills/`,
+  `.claude/settings.json` and the thin caller workflows. The template seeds these once and never
+  touches them again.
+
+Where the two meet, the standard owns the content and the project owns the pointer: the guardrails
+are invariant, the line in `CLAUDE.md` that loads them is the project's, and `make template-check`
+fails if it is missing. Wiring is paid for once; every later revision of the rules arrives free.
 
 A plain template repo copies both and leaves you stranded at the version you started on. Here the
 standard keeps arriving, as a pull request.
