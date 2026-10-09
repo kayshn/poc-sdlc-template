@@ -123,3 +123,4 @@ Design constraints:
 - Add some engineering guardrails
 - Update spec step to create and update C4 diagrams if necessary
 - Test the monitor stage
+- Have a check in pipeline to fail any build that uses old DLC version
