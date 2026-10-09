@@ -119,15 +119,48 @@ migrations=$(read_migrations "$src")
 
 # A file this project owns can be taken over by the standard. Copying the new version over a local
 # edit would revert it with no diff and no record, so that case stops here and a person decides.
-# Checked before anything is written, so refusing leaves the project untouched.
-blocked=""
+#
+# But "differs from the incoming copy" is not the same as "this project changed it": the standard
+# may simply have moved on since the project was seeded. Telling the two apart needs the version
+# the project actually received, so when there is anything to decide, that tag is fetched too.
+# Nothing is written until the whole question is settled.
+candidates=""
 while read -r kind from to; do
   [ "$kind" = promote ] || continue
   [ -e "$from" ] || continue
-  if [ -f "$from" ] && [ -f "$src/$to" ] && cmp -s "$from" "$src/$to"; then continue; fi
+  same_tree "$from" "$src/$to" && continue
+  candidates="$candidates $from"
+done <<EOF
+$migrations
+EOF
+
+prev=""
+if [ -n "$candidates" ] && [ -n "$current" ]; then
+  mkdir -p "$tmp/prev"
+  if curl -fsSL "${auth[@]}" "https://api.github.com/repos/$source_repo/tarball/$current" |
+    tar -xzf - -C "$tmp/prev" 2>/dev/null; then
+    prev=$(find "$tmp/prev" -mindepth 1 -maxdepth 1 -type d | head -1)
+  fi
+  [ -n "$prev" ] || echo "  warn could not fetch $current, so every difference below is treated as yours" >&2
+fi
+
+blocked="" untouched=""
+while read -r kind from to; do
+  [ "$kind" = promote ] || continue
+  [ -e "$from" ] || continue
+  same_tree "$from" "$src/$to" && continue
+  if [ -n "$prev" ] && same_tree "$from" "$prev/$from"; then
+    untouched="$untouched $from"
+    echo "  ~ $from is the standard's now; it still matches the copy $current shipped, so nothing of yours is in it"
+    continue
+  fi
   blocked="$blocked $from"
-  echo "  !  $from becomes part of the standard, as $to, and your copy differs:" >&2
-  diff -u "$from" "$src/$to" | sed 's/^/     /' >&2 || true
+  if [ "$from" = "$to" ]; then
+    echo "  !  $from becomes part of the standard where it stands, and your copy differs:" >&2
+  else
+    echo "  !  $from becomes part of the standard, as $to, and your copy differs:" >&2
+  fi
+  diff -ru "$from" "$src/$to" | sed 's/^/     /' >&2 || true
 done <<EOF
 $migrations
 EOF
@@ -165,6 +198,9 @@ if [ -f "$MANIFEST" ]; then
     printf '%s\n' "$incoming" | grep -Fxq "$f" || {
       echo "  - $f"
       rm -f "$f"
+      # A release that relocates the standard leaves its old directories behind. rmdir -p stops at
+      # the first one that is not empty, so a directory holding anything of the project's survives.
+      rmdir -p "$(dirname "$f")" 2>/dev/null || true
     }
   done < <(awk '{print $2}' "$MANIFEST")
 fi
@@ -184,8 +220,19 @@ cp -p "$src/$MANIFEST" "$MANIFEST"
 while read -r kind from to; do
   [ "$kind" = promote ] || continue
   [ -e "$from" ] || continue
-  if [ -f "$from" ] && [ -f "$to" ] && cmp -s "$from" "$to"; then
-    rm -f "$from"
+  if [ "$from" = "$to" ]; then
+    # Taken over in place: the install above has already written the standard's version here, so
+    # there is no second copy to remove and nothing to port from. Whatever was replaced is in the
+    # diff of this upgrade, which is the only place it can be. Comparing it with itself and
+    # deleting on a match would remove the file that has just been installed.
+    continue
+  fi
+  # An untouched copy holds nothing of the project's, so it goes without comment even though its
+  # contents differ from the version that has just replaced it.
+  case " $untouched " in *" $from "*) same=1 ;; *) same="" ;; esac
+  if [ -n "$same" ] || same_tree "$from" "$to"; then
+    rm -rf "$from"
+    rmdir -p "$(dirname "$from")" 2>/dev/null || true
     echo "  - $from (the standard ships it as $to)"
   else
     echo "  !  $from is now inert: the pipeline reads $to. Port your change into the seam and" >&2
@@ -267,3 +314,10 @@ fi
 
 echo "Now on $source_repo $ref (was ${current:-nothing}). Verifying:"
 verify_manifest "$MANIFEST" && echo "  ok   the invariant layer matches $ref"
+
+# A release that relocates a script leaves `make` pointing at a path that no longer exists, and
+# `No such file or directory` is no help at the moment it is least welcome. The conformance check
+# names every step a release leaves to a person, so point at it by the path this version puts it at
+# rather than the one this copy of the script was run from.
+checker=$(awk '{print $2}' "$MANIFEST" | grep -E '/check_template\.sh$' | head -1)
+[ -z "$checker" ] || echo "Next: ./$checker — it names anything this release leaves for you to do."

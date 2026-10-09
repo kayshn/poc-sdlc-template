@@ -103,9 +103,11 @@ if [ -n "$version" ]; then
   done
 
   # A file the standard has taken over must not linger. Two copies means the one being edited is
-  # not the one the pipeline reads, which is the quietest way to lose a change.
+  # not the one the pipeline reads, which is the quietest way to lose a change. A path taken over
+  # where it stands has no second copy, so there is nothing to check.
   while read -r kind from to; do
     [ "$kind" = promote ] || continue
+    [ "$from" != "$to" ] || continue
     ok_if '[ ! -e "$from" ]' "$from is gone now that the standard ships it as $to (port any local change into the seam, then delete it)"
   done < <(read_migrations .)
 

@@ -69,6 +69,19 @@ expand_invariant() {
   return $missing
 }
 
+# True when two paths hold the same thing: identical files, or directories with identical contents.
+# False if either is missing or they are of different kinds, so a caller can treat "not provably the
+# same" as "different".
+same_tree() {
+  if [ -d "$1" ] && [ -d "$2" ]; then
+    diff -rq "$1" "$2" >/dev/null 2>&1
+  elif [ -f "$1" ] && [ -f "$2" ]; then
+    cmp -s "$1" "$2"
+  else
+    return 1
+  fi
+}
+
 # Print the migrations declared by <root> as `<kind> <from> <to>` lines.
 #
 # The file is cumulative and append-only. A project upgrading across several releases at once sees
