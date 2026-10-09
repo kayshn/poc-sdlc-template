@@ -1,6 +1,45 @@
 # TODO
 
 Deferred work on the template itself. Not part of the standard a consumer receives.
+Removed from a repository created from this template on first install.
+
+## Where things stand (2026-10-09)
+
+Both repositories are clean and on `v1.7.0`. `flow-check`, `template-check`, `lint` and `test` all
+pass in the consumer. Nothing is half-done.
+
+**Repositories.** `kayshn/poc-sdlc-template` (public, template repo, topic `ai-sdlc`) and
+`kayshn/poc-sdlc-consumer-app` (public, a FastAPI URL shortener). Both must stay public: a public
+repository cannot call a private repository's reusable workflow, and a private repository on the
+free plan silently loses the `production` environment reviewers that are the release gate.
+
+**The loop has run end to end once.** Slug `000-expiring-links` went intent → spec → build issue →
+code → review → merge → deploy. Five of six stages are proven. Costs so far are around $0.30 of
+Anthropic API credit.
+
+**Still unexercised**, and therefore where the next bug is:
+
+- `@claude fix this`, the iterate path in stage 4. A review nit on pull request #6 was never used to
+  trigger it.
+- Stage 6, maintain. `monitor.yml` and the σ-breach path have never run. Try it with
+  **Run workflow → inject `0.052`** for 2σ or `0.2` for 3σ.
+
+**Environment.** `gh` has been uninstalled, so opening pull requests, reading run logs and creating
+releases all have to happen in the browser. `yq` is still needed for `make flow-check`. Tags
+`v1.6.0` through `v1.7.0` have no GitHub Release pages; the tags work and `sdlc_update.sh` does not
+need them, so the notes live only in commit messages.
+
+**Two settings that are deliberately not what the guide recommends**, because this is a
+single-maintainer repository: required approvals is `0` (GitHub forbids approving one's own pull
+request), and `.claude/settings.json` holds an API key rather than a subscription token, which bills
+prepaid credits.
+
+**The pattern worth carrying into any demo.** Every serious defect found on 2026-10-08 and -09 was a
+*silent success*: the eval suite reported `rate=1.00` with zero tokens spent, `protect-paths.sh`
+failed open and allowed the edit it exists to block, `sdlc_update.sh` corrupted itself mid-upgrade
+after replacing four files, and two shipped fixes were never delivered to a consumer that reported
+conformant on the newest tag. None failed loudly. All were found by running something, never by
+reading it.
 
 ## Known defects
 
