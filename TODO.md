@@ -4,24 +4,19 @@ Deferred work on the template itself. Not part of the standard a consumer receiv
 
 ## Known defects
 
-Observed, reproducible, not yet fixed. Distinct from the deferred work below, which is absent
-rather than broken.
+None outstanding. The four recorded here were fixed in `v1.7.0`: `open_pr.sh` discarding generated
+work on failure, reporting a push rejection as a bare `exit 128`, opening a pull request that could
+never merge when two runs raced, and the build agent being told to run checks it was not permitted
+to run.
 
-- **`open_pr.sh` throws away the agent's work when the push fails.** The expensive step runs first,
-  then `git push`. A credential problem discards a spec that has already been generated and paid
-  for. Observed 2026-10-08: a 403 lost a complete spec and the run had to be repeated. It should
-  upload the artefact, or write it somewhere the next run can pick up.
-- **`open_pr.sh` reports a push failure as a bare `exit 128`.** A 403 on push has essentially one
-  cause — the token lacks *Contents: write* — and the script should say so with `::error::` rather
-  than leaving the operator to read the raw log.
-- **`open_pr.sh` does not re-check before pushing.** Two concurrent runs both generated a spec for
-  the same slug, and the loser opened a pull request that could never merge. `concurrency:` does
-  not cover a re-run of a completed run racing a fresh dispatch. The script should check
-  `origin/main` for the artefact immediately before pushing and exit cleanly if it is already there.
-- **The build agent is told to run checks it is not allowed to run.** `CLAUDE.md` lists
-  `make flow-check` and `make template-check` as project commands, but neither
-  `.claude/settings.json` nor `claude.yml`'s `--allowedTools` permits them. Every build reports them
-  as unrun. Either permit them — they are read-only — or stop listing them for the agent.
+Two notes survive those fixes:
+
+- **`.claude/settings.json` and `claude.yml` are project-owned**, so the permission half of that
+  last fix does not reach a repository created before `v1.7.0`. Such a repository must add
+  `Bash(make flow-check)` and `Bash(make template-check)` itself.
+- **`--unless` guards the artefact, not the agent run.** The losing run still generates a spec and
+  pays for it before bowing out. Stopping earlier would mean checking at the start, which races
+  differently.
 
 ## Untested
 
