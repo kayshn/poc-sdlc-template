@@ -7,7 +7,7 @@ Deferred work on the template itself. Not part of the standard a consumer receiv
 Two gates — the `production` environment's required reviewers, and *allow Actions to create and
 approve pull requests* — exist in no file in the repo. A team that misses them gets a pipeline that
 looks green and deploys to production with no human gate: a safety failure disguised as success, and
-invisible to `make template-check`. [ONBOARDING.md](ONBOARDING.md) step 4 states them as prose, which
+invisible to `make template-check`. [SDLC-GUIDE.md](SDLC-GUIDE.md) step 4 states them as prose, which
 is the same mistake `.sdlc/flow.yaml` exists to avoid.
 
 Proposed: `.sdlc/scripts/setup_github.sh`, in the invariant layer.

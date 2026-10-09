@@ -1,7 +1,7 @@
 # AI-native SDLC template
 
 A working six-stage SDLC loop driven by Claude Code and GitHub Actions, with no application code.
-Create a repository from this template, work through [ONBOARDING.md](ONBOARDING.md), and you have the loop.
+Create a repository from this template, work through [SDLC-GUIDE.md](SDLC-GUIDE.md), and you have the loop.
 
 ```
 intent → spec → plan + code → CI + AI review → deploy → monitor → intent
@@ -49,8 +49,7 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `Makefile` | The one place the pipeline touches your stack. The workflows only ever call `make <target>` |
 | `scripts/detect.sh` | Deterministic control-band detection in shell; the AI is only invoked on a breach |
 | `scripts/deploy.sh`, `scripts/rollback.sh` | Simulated — point them at a real target |
-| `ONBOARDING.md` | The adoption runbook. Delete it once the loop is turning |
-| `DEV-WORKFLOW.md` | The loop as a diagram: the five actions a person performs, and who performs each |
+| `SDLC-GUIDE.md` | The loop as a diagram, how to work in a repository that has adopted it, and how to adopt it |
 
 ## Two layers
 
@@ -87,12 +86,9 @@ jobs:
 
 `make template-check` fails until the rest of the adoption is done too, so you cannot half-finish it.
 
-**[ONBOARDING.md](ONBOARDING.md) is the runbook**: what you are signing up for, the one blocking
-adaptation, the GitHub settings that exist in no file here, how to drive the first change round the
-loop, and what each failure message means.
-
-**[DEV-WORKFLOW.md](DEV-WORKFLOW.md) is the diagram**: one change from idea to production, and which of the
-steps a person performs.
+**[SDLC-GUIDE.md](SDLC-GUIDE.md) is the guide**: the loop as a diagram and the five actions a person
+performs, what has to be installed locally, how to adopt the loop in a new repository, how upgrades
+arrive, and what each failure message means.
 
 ### Stay current
 
@@ -100,7 +96,7 @@ steps a person performs.
 repoints the callers, and opens a *chore: SDLC template vX.Y.Z* PR — which then goes through
 `ci / test` and `evals / suite` like any other change, and waits for a human to merge. Run it on
 demand with **Run workflow**, or locally with `make sdlc-update`. See
-[ONBOARDING.md](ONBOARDING.md#7-staying-current) for what to expect from an upgrade.
+[SDLC-GUIDE.md](SDLC-GUIDE.md#staying-current) for what to expect from an upgrade.
 
 The one exception is the AI review: `claude-code-action` will not run when a workflow file differs
 from the version on the default branch, and an upgrade always rewrites the pinned refs. The review
