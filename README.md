@@ -97,9 +97,14 @@ steps a person performs.
 ### Stay current
 
 `sdlc-update.yml` runs weekly. When the template publishes a newer tag it pulls the invariant layer,
-repoints the callers, and opens a *chore: SDLC template vX.Y.Z* PR — which then goes through `ci / test`,
-`evals / suite` and Claude review like any other change, and waits for a human to merge. Run it on
-demand with **Run workflow**, or locally with `make sdlc-update`.
+repoints the callers, and opens a *chore: SDLC template vX.Y.Z* PR — which then goes through
+`ci / test` and `evals / suite` like any other change, and waits for a human to merge. Run it on
+demand with **Run workflow**, or locally with `make sdlc-update`. See
+[ONBOARDING.md](ONBOARDING.md#7-staying-current) for what to expect from an upgrade.
+
+The one exception is the AI review: `claude-code-action` will not run when a workflow file differs
+from the version on the default branch, and an upgrade always rewrites the pinned refs. The review
+check passes in seconds having read nothing.
 
 The standard upgrading itself through the gates it installed is the point: there is no path by which
 new policy reaches production without a person approving it.

@@ -118,6 +118,41 @@ To require a product owner on every spec instead, set `stages.design.gate.approv
 
 ---
 
+## 7. Staying current
+
+`sdlc-update.yml` runs weekly. When a newer tag exists it pulls the invariant layer, repoints the
+five caller workflows, and opens a *chore: SDLC template vX.Y.Z* pull request. To do it sooner, use
+**Actions → SDLC template update → Run workflow**, or run `make sdlc-update` locally and open the
+pull request by hand. Pass a tag to move to a specific version:
+`./.sdlc/scripts/sdlc_update.sh v1.4.0`.
+
+**What the pull request may contain.** Only files named in `.sdlc/invariant.txt`, the pinned refs in
+the callers, and `.sdlc/TEMPLATE_VERSION`. Anything the project owns is never touched, so a diff
+that reaches `CLAUDE.md`, the `Makefile` bodies or `src/` is a bug worth reporting upstream.
+
+**Read the release notes, not the diff.** The diff is mostly shell. The notes say what changed and
+whether anything is required of the project — a release occasionally asks for a manual step, because
+`sdlc_update.sh` cannot edit files the project owns. `claude.yml` is one such file.
+
+**Three things to expect:**
+
+- **The upgrade pull request gets no AI review.** `claude-code-action` refuses to run when a workflow
+  file differs from the version on the default branch, and every upgrade rewrites the pinned refs.
+  The check reports success in a few seconds having reviewed nothing. `ci / test` and `evals / suite`
+  still run properly.
+- **`make template-check` can fail straight after an upgrade.** A release that starts rejecting
+  something previously tolerated reports it as a failure for the project to resolve. Upgrades never
+  delete a file the project might own: `.sdlc/scripts/sdlc_update.sh` removes template-upkeep files
+  only on first install, because deleting a file called `TODO.md` on every upgrade would eventually
+  destroy a real backlog.
+- **Files the template seeds are never backfilled.** `CLAUDE.md`, the `_TEMPLATE.md` artefacts and
+  the caller workflows arrive once, at repository creation, and are the project's from then on. Only
+  the invariant layer is redelivered. A repository created before a seeded file existed never
+  receives it.
+
+**Skipping a release is safe**; upgrades are cumulative. Staying several versions behind is not
+especially risky either, but `check_template.sh` warns on every run until the project catches up.
+
 ## When something goes wrong
 
 | Symptom | Cause |
@@ -129,5 +164,6 @@ To require a product owner on every spec instead, set `stages.design.gate.approv
 | Template-update PR fails to push | `SDLC_BOT_TOKEN` lacks *Workflows* write; it has to rewrite the pinned refs |
 | One-person repo cannot merge anything | GitHub forbids approving your own PR. Either add a second reviewer, or require 0 approvals and let the status checks plus the merge button be the gate |
 | `make flow-check` says `yq is not installed` | Install mikefarah's `yq`. The runners have it; your laptop may not |
+| A file the template added recently is missing | Only the invariant layer is redelivered. Seeded files arrive once, at repository creation; copy it across by hand |
 
 You can delete this file once the loop is turning.
