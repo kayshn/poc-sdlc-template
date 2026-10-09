@@ -192,13 +192,19 @@ Design constraints:
   consumer holding a credential that can rewrite its own branch protection. Running locally against
   the adopter's own `gh` auth means no admin credential is stored anywhere.
 
-## The design gate has nothing standing on it
+## Design review gate
 
 Found on 2026-10-09 by the `002-link-follow-count` lap, on `v2.2.0`. The spec pull request is the
 only gate in the loop with no person on it — `.sdlc/flow.yaml` sets `stages.design.gate.approval`
 to `auto` and the pipeline grants the approval. The AI review ran on that pull request, raised two
 **Important** findings, and the pull request auto-merged anyway, unlocking the Build issue. A
 review whose findings cannot change the outcome is decoration.
+
+**Fixed after `v3.0.1`.** `_intent-to-spec.yml` now waits up to 30 minutes for an exact
+`REVIEW-TALLY important=<n> nit=<n>` line posted by `github-actions[bot]`. Zero Important findings
+permits automatic approval; any Important finding leaves the pull request for a human; no valid
+tally fails the workflow closed. The gate reads only the tally, never model prose, and only runs
+for spec pull requests created by this workflow.
 
 The two findings, both substantive:
 
@@ -208,7 +214,7 @@ The two findings, both substantive:
   `secure-api-review` rule 4 and a `CLAUDE.md` convention. The reasoning was sound; a spec waiving
   a project convention on its own authority is not.
 
-Four pieces of work, smallest first. The last is the only one that needs a gate at all:
+Three pieces of deterministic policy work remain:
 
 - **G7: a spec may not relax a rule.** A spec, plan or build that needs a `CLAUDE.md` convention, a
   skill rule or a guardrail changed must propose that amendment as its own change and block on it.
@@ -221,17 +227,6 @@ Four pieces of work, smallest first. The last is the only one that needs a gate 
 - **An accepted risk needs a named owner.** `_TEMPLATE.md` should require a name in the risk
   section, and empty should fail. "Accepted risk" with nobody accepting it is the same laundering
   of an unowned claim as the refusal defect above.
-- **`review-gate`: `important > 0` withholds the automatic approval.** Not "Important blocks
-  merge" — that would hand the model a veto over people. It fails closed and a human still merges,
-  so the agent can stop a gate but never pass one, which is the existing rule unchanged. Read only
-  the `REVIEW-TALLY important=<n> nit=<n>` line; the moment the gate parses the review body, the
-  model's formatting becomes load-bearing. Two details decide whether it is real:
-  - **Scope it to spec pull requests.** A blanket gate blocks every `chore: SDLC template vX.Y.Z`
-    upgrade for good, because those are exactly the pull requests where `claude-code-action`
-    refuses to run.
-  - **No tally must fail, not pass.** Otherwise the gate evaporates in precisely the case where the
-    review was skipped — which the workflow-file-differs quirk guarantees will happen.
-
 ## Also deferred
 
 - **Eval cases need a positive control.** Done for `intent-is-frozen-during-build`: its prompt now
