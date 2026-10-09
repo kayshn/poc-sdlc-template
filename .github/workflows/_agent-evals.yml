@@ -42,11 +42,11 @@ jobs:
             exit 0
           fi
           if git diff --name-only "$BASE" "$HEAD" |
-             grep -qE '^(CLAUDE\.md|\.sdlc/REVIEW\.md|\.claude/|\.sdlc/evals/)'; then
+             grep -qE '^(CLAUDE\.md|\.sdlc/upstream/REVIEW\.md|\.claude/|\.sdlc/upstream/evals/)'; then
             echo "relevant=true" >> "$GITHUB_OUTPUT"
           else
             echo "relevant=false" >> "$GITHUB_OUTPUT"
-            echo "No change to CLAUDE.md, .sdlc/REVIEW.md, .claude/ or .sdlc/evals/, so the eval suite did not run." >> "$GITHUB_STEP_SUMMARY"
+            echo "No change to CLAUDE.md, .sdlc/upstream/REVIEW.md, .claude/ or .sdlc/upstream/evals/, so the eval suite did not run." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       # Eval cases run `make lint` and `make test`; `make install` provisions the toolchain.
@@ -62,7 +62,7 @@ jobs:
         run: |
           git config --global user.name evals
           git config --global user.email evals@users.noreply.github.com
-          ./.sdlc/evals/run_evals.sh | tee -a "$GITHUB_STEP_SUMMARY"
+          ./.sdlc/upstream/evals/run_evals.sh | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always() && steps.scope.outputs.relevant == 'true'
         with:

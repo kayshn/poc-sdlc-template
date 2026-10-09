@@ -8,7 +8,7 @@
 
 <!-- Loads the engineering guardrails into every session. Keep this line: `make template-check`
      fails without it. The second line is this project's own rules, and is yours to fill in. -->
-@.sdlc/standards/engineering-guardrails.md
+@.sdlc/upstream/standards/engineering-guardrails.md
 @.sdlc/standards/project-guardrails.md
 
 ## Commands
@@ -21,9 +21,9 @@
 - SDLC flow declaration check: `make flow-check`
 
 ## SDLC artefacts (one slug per change)
-- Slugs are `NNN-<short-name>` (e.g. `001-first-feature`); get the next number from `.sdlc/scripts/next_intent_number.sh`.
+- Slugs are `NNN-<short-name>` (e.g. `001-first-feature`); get the next number from `.sdlc/upstream/scripts/next_intent_number.sh`.
 - `.sdlc/intent/<slug>.md` → `.sdlc/specs/<slug>.md` → `.sdlc/plans/<slug>.md` → PR → `.sdlc/lessons/` after incidents.
-- Templates live in `.sdlc/intent/_TEMPLATE.md`, `.sdlc/specs/_TEMPLATE.md`, `.sdlc/plans/_TEMPLATE.md`.
+- Templates live in `.sdlc/upstream/templates/intent.md`, `.sdlc/upstream/templates/spec.md`, `.sdlc/upstream/templates/plan.md`.
 - `.sdlc/flow.yaml` declares the loop's stages and gates; keep it in step when a workflow or gate changes.
 - Before implementing, read the spec and plan for the change. If implementation departs from plan.md, update plan.md in the same commit.
 

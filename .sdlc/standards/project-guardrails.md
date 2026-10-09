@@ -4,7 +4,7 @@
      each template release, and an edit to them is reverted by the next upgrade. Anything this
      stack needs that the standard does not cover goes here instead. Delete the examples. -->
 
-Rules specific to this project. `.sdlc/standards/engineering-guardrails.md` holds the rules that
+Rules specific to this project. `.sdlc/upstream/standards/engineering-guardrails.md` holds the rules that
 come with the SDLC template and apply to every project using it; this file holds the rest.
 
 Numbered `P<n>` so a review can cite one without ambiguity — `G` ids always mean the standard.

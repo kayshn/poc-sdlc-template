@@ -1,8 +1,10 @@
-# The workflows call these targets by name: install, lint, test, flow-check, template-check,
-# evals, detect. Keep the names; replace the bodies with whatever this project's stack needs.
-# `lint` and `test` deliberately fail until you wire them up — a green check that ran nothing is
+# Your project's targets. The workflows call install, lint, test and format by name, and the agent
+# calls format-file and verify — keep the names, replace the bodies with whatever this stack needs.
+# `lint` and `test` deliberately fail until you wire them up: a green check that ran nothing is
 # worse than a red one.
-.PHONY: install lint test format format-file verify run flow-check template-check evals detect manifest sdlc-update
+#
+# Everything the SDLC loop itself needs arrives in .sdlc/upstream/sdlc.mk, included at the bottom.
+.PHONY: install lint test format format-file verify run manifest
 
 install:
 	@echo "TODO: install dependencies (npm ci / mvn verify -DskipTests / go mod download / ...)"
@@ -29,24 +31,8 @@ verify:
 run:
 	@echo "TODO: start the application"
 
-# Nothing below this line is stack-specific — leave it alone.
-
-flow-check:
-	./.sdlc/scripts/check_flow.sh
-
-template-check:
-	./.sdlc/scripts/check_template.sh
-
-# Upgrade the invariant layer. Not part of `install`: CI verifies, humans upgrade.
-sdlc-update:
-	./.sdlc/scripts/sdlc_update.sh
-
-# Template repo only: re-hash the invariant layer after changing it.
+# Template repo only, so not in sdlc.mk: re-hashes the received layer after changing it.
 manifest:
-	./.sdlc/scripts/make_manifest.sh
+	./tools/make_manifest.sh
 
-evals:
-	./.sdlc/evals/run_evals.sh
-
-detect:
-	./scripts/detect.sh --bands .sdlc/monitoring/bands.json --metrics .sdlc/monitoring/metrics.json
+include .sdlc/upstream/sdlc.mk

@@ -9,11 +9,11 @@ Both repositories are on `v2.2.0`. `flow-check`, `template-check`, `lint` and `t
 consumer. One lap is in flight: slug `002-link-follow-count` has reached the Build issue, and
 nothing has been built from it yet.
 
-**`v2.1.0` and `v2.2.0`.** `v2.1.0` added the *Claims about what was run* rule to `.sdlc/REVIEW.md`,
+**`v2.1.0` and `v2.2.0`.** `v2.1.0` added the *Claims about what was run* rule to `.sdlc/upstream/REVIEW.md`,
 after a build agent's unverified refusal was repeated by the reviewer as fact — see *Known defects*.
-`v2.2.0` added the engineering guardrails: `.sdlc/standards/engineering-guardrails.md` holds G1–G5
+`v2.2.0` added the engineering guardrails: `.sdlc/upstream/standards/engineering-guardrails.md` holds G1–G5
 and is invariant, while the two things that make it bite — the `@`-import line in `CLAUDE.md` and
-the *Guardrails* pass in `.sdlc/REVIEW.md` — belong to the project and are enforced by
+the *Guardrails* pass in `.sdlc/upstream/REVIEW.md` — belong to the project and are enforced by
 `check_template.sh`. Wiring costs a consumer two edits, once; every later revision of the rules then
 arrives for free. `invariant.txt` names the guardrails *file* and not the `.sdlc/standards/`
 directory on purpose: a directory entry is `find`-expanded, so it would sweep a consumer's own
@@ -67,7 +67,7 @@ reading it.
 ## Known defects
 
 - **The build agent reported a refusal, and the review repeated it as fact.** The plan committed on
-  PR #14 of the consumer says "`scripts/detect.sh`, `make lint` and `make test` were not run in
+  PR #14 of the consumer says "`.sdlc/upstream/scripts/detect.sh`, `make lint` and `make test` were not run in
   this build because the sandbox refused those commands". `detect.sh` is correct — it is in no
   allow list. `make lint` and `make test` are not: the iterate run's log shows the full
   `allowedTools` arriving intact from `_claude.yml@v2.0.0`, `permission_denials_count: 0`, and the
@@ -78,7 +78,7 @@ reading it.
 
   - **Confirmed: the loop launders an unverified claim into a reviewed fact.** `claude-review`
     wrote "the PR description says the author's sandbox also refused them" instead of testing it.
-    Nothing in `.sdlc/REVIEW.md` required otherwise, so an assertion with no evidence behind it
+    Nothing in `.sdlc/upstream/REVIEW.md` required otherwise, so an assertion with no evidence behind it
     reached a human looking corroborated. Fixed by the "Claims about what was run" section, which
     `check_template.sh` now requires.
   - **Probable: the refusal never happened.** `claude-code-action`'s own prompt tells the agent
@@ -99,7 +99,7 @@ reading it.
   therefore run by a script that cannot do it. `check_template.sh` arrives in the same upgrade and
   fails the upgrade PR with the remedy in the message:
 
-      ./.sdlc/scripts/sdlc_update.sh --rewire
+      ./.sdlc/upstream/scripts/sdlc_update.sh --rewire
 
   One command, once, and only for repositories created before `v2.0.0`. Done in the consumer on
   2026-10-09 (PR #10). Every later body extraction migrates on its own, because the migration code
@@ -158,14 +158,14 @@ behaviour, not the path:
 Two gates — the `production` environment's required reviewers, and *allow Actions to create and
 approve pull requests* — exist in no file in the repo. A team that misses them gets a pipeline that
 looks green and deploys to production with no human gate: a safety failure disguised as success, and
-invisible to `make template-check`. [SDLC-GUIDE.md](SDLC-GUIDE.md) step 4 states them as prose, which
+invisible to `make template-check`. [.sdlc/upstream/GUIDE.md](.sdlc/upstream/GUIDE.md) step 4 states them as prose, which
 is the same mistake `.sdlc/flow.yaml` exists to avoid.
 
-Proposed: `.sdlc/scripts/setup_github.sh`, in the invariant layer.
+Proposed: `.sdlc/upstream/scripts/setup_github.sh`, in the invariant layer.
 
 ```bash
-./.sdlc/scripts/setup_github.sh --verify                  # read-only; safe for CI and the scorecard
-./.sdlc/scripts/setup_github.sh --apply --approvals 0
+./.sdlc/upstream/scripts/setup_github.sh --verify                  # read-only; safe for CI and the scorecard
+./.sdlc/upstream/scripts/setup_github.sh --apply --approvals 0
 ```
 
 | Step | Scriptable | Endpoint |
@@ -212,7 +212,7 @@ Four pieces of work, smallest first. The last is the only one that needs a gate 
 
 - **G7: a spec may not relax a rule.** A spec, plan or build that needs a `CLAUDE.md` convention, a
   skill rule or a guardrail changed must propose that amendment as its own change and block on it.
-  Belongs in `.sdlc/standards/engineering-guardrails.md`, where it binds the spec *author* rather
+  Belongs in `.sdlc/upstream/standards/engineering-guardrails.md`, where it binds the spec *author* rather
   than being caught afterwards by the reviewer. Cheapest, prevents the class, and the provenance is
   real: the loop found it.
 - **An approved spec cannot have open questions.** Deterministic, no model needed — the

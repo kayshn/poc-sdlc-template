@@ -8,7 +8,7 @@ name: Spec to build
 on:
   push:
     branches: [main]
-    paths: [".sdlc/specs/**.md", "!.sdlc/specs/_TEMPLATE.md"]
+    paths: [".sdlc/specs/**.md"]
 
 # A called workflow can only narrow these, never widen them, so they are declared here.
 permissions:

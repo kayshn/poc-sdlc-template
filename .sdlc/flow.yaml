@@ -4,7 +4,7 @@
 #
 # Read by the pipeline: `gate.approval` on stages marked `configurable: true` (auto | manual).
 # Every other gate is enforced outside this file (`enforced_by`), so it is documented here, not
-# switched here. .sdlc/scripts/check_flow.sh keeps this file in step with the repo.
+# switched here. .sdlc/upstream/scripts/check_flow.sh keeps this file in step with the repo.
 version: 1
 
 actors:
@@ -16,7 +16,7 @@ stages:
   plan:
     by: human # or the maintain stage, with nobody in the invocation path
     produces: [.sdlc/intent/<slug>.md]
-    template: .sdlc/intent/_TEMPLATE.md
+    template: .sdlc/upstream/templates/intent.md
     skills: [write-intent]
     review: claude-review.yml
     gate:
@@ -28,10 +28,10 @@ stages:
     trigger: { workflow: intent-to-spec.yml, on: merge of .sdlc/intent/<slug>.md }
     by: agent
     produces: [.sdlc/specs/<slug>.md]
-    template: .sdlc/specs/_TEMPLATE.md
+    template: .sdlc/upstream/templates/spec.md
     # The one view of the system at container level, amended by this stage whenever the
     # architecture moves. Text, so that an amendment is a diff a reviewer can read. G6 in
-    # .sdlc/standards/engineering-guardrails.md binds to this path; check_flow.sh asserts the file
+    # .sdlc/upstream/standards/engineering-guardrails.md binds to this path; check_flow.sh asserts the file
     # exists and that every spec either shows a change to it or denies there was one.
     diagram: .sdlc/architecture/container.md
     skills: [write-spec, secure-api-review]
@@ -49,7 +49,7 @@ stages:
     start: manual # nothing is built until a person comments @claude on the Build issue
     by: agent
     produces: [.sdlc/plans/<slug>.md, <source and test directories>]
-    template: .sdlc/plans/_TEMPLATE.md
+    template: .sdlc/upstream/templates/plan.md
     workflow: claude.yml
     gate:
       approval: manual

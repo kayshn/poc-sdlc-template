@@ -4,10 +4,10 @@
 # touched. Files the new version drops are removed, so the standard can shrink as well as grow.
 #
 #   make sdlc-update                        the newest tag of the source in .sdlc/TEMPLATE_VERSION
-#   ./.sdlc/scripts/sdlc_update.sh v1.2.0   a specific tag
-#   ./.sdlc/scripts/sdlc_update.sh --source kayshn/poc-sdlc-template v1.0.0   first install
-#   ./.sdlc/scripts/sdlc_update.sh --rewire   re-run at the version already installed
-#   ./.sdlc/scripts/sdlc_update.sh --accept-promotions   take the standard's copy of a file it has
+#   ./.sdlc/upstream/scripts/sdlc_update.sh v1.2.0   a specific tag
+#   ./.sdlc/upstream/scripts/sdlc_update.sh --source kayshn/poc-sdlc-template v1.0.0   first install
+#   ./.sdlc/upstream/scripts/sdlc_update.sh --rewire   re-run at the version already installed
+#   ./.sdlc/upstream/scripts/sdlc_update.sh --accept-promotions   take the standard's copy of a file it has
 #                                           taken over, keeping yours on disk to port by hand
 #
 # A release can also change the shape of a project: relocate something the project owns, or take
@@ -28,7 +28,7 @@ trap 'echo "sdlc_update.sh failed at line $LINENO" >&2' ERR
 # incrementally from a file offset, so overwriting it mid-run resumes at a meaningless offset and
 # fails with a syntax error, after some of the work has been done. Re-exec from a copy first.
 if [ "${SDLC_UPDATE_REEXEC:-}" != 1 ]; then
-  SDLC_UPDATE_ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+  SDLC_UPDATE_ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
   export SDLC_UPDATE_ROOT SDLC_UPDATE_REEXEC=1
   self=$(mktemp)
   trap 'rm -f "$self"' EXIT
@@ -40,9 +40,9 @@ if [ "${SDLC_UPDATE_REEXEC:-}" != 1 ]; then
   exit $rc
 fi
 
-cd "${SDLC_UPDATE_ROOT:-$(dirname "$0")/../..}"
-# shellcheck source=.sdlc/scripts/_sdlc_lib.sh
-. ./.sdlc/scripts/_sdlc_lib.sh
+cd "${SDLC_UPDATE_ROOT:-$(dirname "$0")/../../..}"
+# shellcheck source=.sdlc/upstream/scripts/_sdlc_lib.sh
+. ./.sdlc/upstream/scripts/_sdlc_lib.sh
 
 source_repo="" ref="" rewire=0 accept_promotions=0
 while [ $# -gt 0 ]; do
@@ -167,7 +167,7 @@ EOF
 if [ -n "$blocked" ] && [ "$accept_promotions" != 1 ]; then
   echo >&2
   echo "Nothing has been changed. Each file above has a documented seam for holding a local" >&2
-  echo "difference without holding a copy of the file; see SDLC-GUIDE.md. Port the change into" >&2
+  echo "difference without holding a copy of the file; see .sdlc/upstream/GUIDE.md. Port the change into" >&2
   echo "the seam, or re-run with --accept-promotions to take the standard's version and keep" >&2
   echo "yours on disk to port later." >&2
   exit 1
@@ -263,7 +263,7 @@ pin_local_calls() {
 if [ "$first_install" = 1 ]; then
   # A repo made from the template inherits the template's own maintenance files. GitHub has no
   # .templateignore, so they are removed here instead.
-  for leftover in TODO.md .sdlc/scripts/make_manifest.sh; do
+  for leftover in TODO.md tools/make_manifest.sh; do
     [ -e "$leftover" ] || continue
     rm -f "$leftover"
     echo "  - $leftover (belongs to the template, not to this project)"
@@ -305,7 +305,7 @@ else
 fi
 
 {
-  echo "# Written by .sdlc/scripts/sdlc_update.sh. The invariant layer below this project's own"
+  echo "# Written by .sdlc/upstream/scripts/sdlc_update.sh. The invariant layer below this project's own"
   echo "# files came from the tag named here. Run \`make sdlc-update\` to move to a newer one."
   echo "source: $source_repo"
   echo "version: $ref"

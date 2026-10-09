@@ -1,7 +1,7 @@
 # Invariant — part of the AI-native SDLC standard. Pulled by tag; do not edit in a consumer repo.
 # The triggers live in the caller, .github/workflows/claude-review.yml.
 #
-# Stage 5: every PR gets the same AI review passes defined in .sdlc/REVIEW.md.
+# Stage 5: every PR gets the same AI review passes defined in .sdlc/upstream/REVIEW.md.
 # Findings inform the human approver; branch protection still requires a code owner.
 name: Claude review (reusable)
 
@@ -31,8 +31,8 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Review this pull request following .sdlc/REVIEW.md exactly. The PR branch is checked out.
-            If .sdlc/REVIEW.local.md exists, run its passes too, after the ones in .sdlc/REVIEW.md.
+            Review this pull request following .sdlc/upstream/REVIEW.md exactly. The PR branch is checked out.
+            If .sdlc/REVIEW.local.md exists, run its passes too, after the ones in .sdlc/upstream/REVIEW.md.
             Identify the change's slug from the PR title, branch or changed files, and check the
             diff against .sdlc/specs/<slug>.md and .sdlc/plans/<slug>.md (say so if either is missing).
             Apply CLAUDE.md conventions and the secure-api-review skill.

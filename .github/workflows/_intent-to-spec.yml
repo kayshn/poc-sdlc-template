@@ -128,7 +128,7 @@ jobs:
           # rather than opening a pull request that can never merge.
           unless=()
           for s in $SLUGS; do unless+=(--unless ".sdlc/specs/$s.md"); done
-          ./.sdlc/scripts/open_pr.sh "${unless[@]}" "$branch" "spec: $SLUGS" pr-body.md .sdlc/specs/
+          ./.sdlc/upstream/scripts/open_pr.sh "${unless[@]}" "$branch" "spec: $SLUGS" pr-body.md .sdlc/specs/
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
       # Approve as github-actions[bot] (needs "Allow GitHub Actions to create and approve pull requests"),

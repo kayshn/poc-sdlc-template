@@ -9,7 +9,7 @@ name: Intent to spec
 on:
   push:
     branches: [main]
-    paths: [".sdlc/intent/**.md", "!.sdlc/intent/_TEMPLATE.md"]
+    paths: [".sdlc/intent/**.md"]
   workflow_dispatch:
     inputs:
       slug:

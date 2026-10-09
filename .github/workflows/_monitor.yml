@@ -30,7 +30,7 @@ jobs:
         env:
           INJECT: ${{ inputs.inject }}
         run: |
-          result=$(./scripts/detect.sh --bands .sdlc/monitoring/bands.json \
+          result=$(./.sdlc/upstream/scripts/detect.sh --bands .sdlc/monitoring/bands.json \
             --metrics .sdlc/monitoring/metrics.json ${INJECT:+--inject "$INJECT"})
           echo "$result" | tee -a "$GITHUB_STEP_SUMMARY"
           echo "evidence=$result" >> "$GITHUB_OUTPUT"
@@ -47,7 +47,7 @@ jobs:
           token: ${{ secrets.SDLC_BOT_TOKEN || github.token }}
 
       - id: name
-        run: echo "slug=$(./.sdlc/scripts/next_intent_number.sh)-monitor-$(jq -r .metric <<< '${{ needs.detect.outputs.evidence }}' | tr _ -)-$(date -u +%Y%m%d-%H%M)" >> "$GITHUB_OUTPUT"
+        run: echo "slug=$(./.sdlc/upstream/scripts/next_intent_number.sh)-monitor-$(jq -r .metric <<< '${{ needs.detect.outputs.evidence }}' | tr _ -)-$(date -u +%Y%m%d-%H%M)" >> "$GITHUB_OUTPUT"
 
       - name: Claude diagnoses (read-only) and writes intent.md
         uses: anthropics/claude-code-action@v1
@@ -82,5 +82,5 @@ jobs:
             echo
             echo "**On-call / service owner:** fix now (merge, which starts the spec stage), schedule, or dismiss (close; consider tuning .sdlc/monitoring/bands.json)."
           } > pr-body.md
-          ./.sdlc/scripts/open_pr.sh "intent/${{ steps.name.outputs.slug }}" \
+          ./.sdlc/upstream/scripts/open_pr.sh "intent/${{ steps.name.outputs.slug }}" \
             "intent: ${{ steps.name.outputs.slug }}" pr-body.md .sdlc/intent/

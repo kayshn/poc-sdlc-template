@@ -64,7 +64,7 @@ jobs:
           **Engineer, build in CI**
           1. Comment on this issue: *@claude read .sdlc/intent/$slug.md and .sdlc/specs/$slug.md, commit the implementation plan as .sdlc/plans/$slug.md, then implement it and open a PR that says Closes #<this issue>.*
           2. Review \`.sdlc/plans/$slug.md\` in the PR alongside the code. If the plan is wrong, say so in a review comment and reply \`@claude fix this\`.
-          3. CI runs lint and tests; \`claude-review\` posts findings against \`.sdlc/REVIEW.md\`, the spec and the plan.
+          3. CI runs lint and tests; \`claude-review\` posts findings against \`.sdlc/upstream/REVIEW.md\`, the spec and the plan.
 
           **Alternative: locally, in plan mode** (needs the \`claude\` CLI)
           1. \`git pull && claude --worktree $slug --permission-mode plan\`

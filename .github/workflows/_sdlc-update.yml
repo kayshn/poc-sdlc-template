@@ -37,7 +37,7 @@ jobs:
             echo "No .sdlc/TEMPLATE_VERSION: this repo is the template itself, nothing to update."
             exit 0
           fi
-          ./.sdlc/scripts/sdlc_update.sh ${REF:+"$REF"} | tee update.log
+          ./.sdlc/upstream/scripts/sdlc_update.sh ${REF:+"$REF"} | tee update.log
           if [ -z "$(git status --porcelain)" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
@@ -64,5 +64,5 @@ jobs:
             echo
             echo "\`ci / test\` runs \`make template-check\`, which re-verifies every hash against the new manifest."
           } > pr-body.md
-          ./.sdlc/scripts/open_pr.sh "sdlc-update/$VERSION" "chore: SDLC template $VERSION" pr-body.md \
+          ./.sdlc/upstream/scripts/open_pr.sh "sdlc-update/$VERSION" "chore: SDLC template $VERSION" pr-body.md \
             .sdlc .claude .github/workflows
