@@ -1,15 +1,15 @@
 << MUST BE IGNORED BY AGENTS >>
 
-## TODO - K1
-- Evaluate using Copilot instead of Claude
-- Evaluate AWS SDLC
-- Improve evals and measuring agent performance
-- Measure value from using DLC
-- Clarify how versioning works in template and consumer works
-- Add some engineering guardrails
+## QUESTIONS
+- Evaluate using Copilot instead of Claude?
+- Evaluate AWS SDLC?
+- Improve evals and measuring agent performance?
+- Measure value from using DLC?
+- Have a check in pipeline to fail any build that uses old DLC version?
+
+## TODO
 - Update spec step to create and update C4 diagrams if necessary
-- Test the monitor stage
-- Have a check in pipeline to fail any build that uses old DLC version
+- Verify the monitor stage
 
 ## DLC Test Scenarios
 1. Scenario 1 — template ships an engineering guardrail, consumer pulls it in. √
