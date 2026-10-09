@@ -1,0 +1,21 @@
+# Changes to the shape of a project that an upgrade cannot work out for itself.
+#
+# sdlc_update.sh replaces the invariant layer wholesale, so a file the standard relocates needs no
+# entry here: the old path leaves the manifest and is deleted, the new one arrives. This file is
+# for the two cases that touch paths the project owns, which that mechanism never looks at.
+#
+#   move <from> <to>       Relocate a path this project owns. Applied before the new layer is
+#                          installed. Refuses rather than merges when <to> already exists.
+#
+#   promote <from> <to>    A path this project owned becomes part of the standard, at <to>.
+#                          An identical local copy is deleted. A local copy that differs stops the
+#                          upgrade with a diff, because installing over it would revert a
+#                          deliberate edit with no warning and no record. --accept-promotions
+#                          proceeds and leaves the copy on disk to port by hand; template-check
+#                          fails until it is gone.
+#
+# Entries are cumulative and append-only: a project three releases behind sees only this copy of
+# the file, so removing an entry strands whoever had not yet upgraded past it. Each entry is a
+# no-op once <from> is gone, so re-running an upgrade is safe.
+#
+# Order matters within a kind, and moves are applied before promotions are resolved.

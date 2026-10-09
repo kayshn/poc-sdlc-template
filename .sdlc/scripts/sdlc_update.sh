@@ -7,6 +7,12 @@
 #   ./.sdlc/scripts/sdlc_update.sh v1.2.0   a specific tag
 #   ./.sdlc/scripts/sdlc_update.sh --source kayshn/poc-sdlc-template v1.0.0   first install
 #   ./.sdlc/scripts/sdlc_update.sh --rewire   re-run at the version already installed
+#   ./.sdlc/scripts/sdlc_update.sh --accept-promotions   take the standard's copy of a file it has
+#                                           taken over, keeping yours on disk to port by hand
+#
+# A release can also change the shape of a project: relocate something the project owns, or take
+# over a file the project used to own. Neither can be worked out by comparing manifests, so the
+# release declares it in .sdlc/MIGRATIONS, whose header explains the two kinds.
 #
 # --rewire exists because this script is itself part of the invariant layer: the copy that runs an
 # upgrade is always the one installed *before* it, so a release that changes how the callers are
@@ -27,15 +33,18 @@ if [ "${SDLC_UPDATE_REEXEC:-}" != 1 ]; then
   self=$(mktemp)
   trap 'rm -f "$self"' EXIT
   cat "$0" >"$self"
-  bash "$self" "$@"
-  exit $?
+  # Not `bash "$self" "$@"` bare: the ERR trap would fire here and report this line for a failure
+  # the child has already explained, making a deliberate refusal read like a crash.
+  rc=0
+  bash "$self" "$@" || rc=$?
+  exit $rc
 fi
 
 cd "${SDLC_UPDATE_ROOT:-$(dirname "$0")/../..}"
 # shellcheck source=.sdlc/scripts/_sdlc_lib.sh
 . ./.sdlc/scripts/_sdlc_lib.sh
 
-source_repo="" ref="" rewire=0
+source_repo="" ref="" rewire=0 accept_promotions=0
 while [ $# -gt 0 ]; do
   case $1 in
   --source)
@@ -44,6 +53,10 @@ while [ $# -gt 0 ]; do
     ;;
   --rewire)
     rewire=1
+    shift
+    ;;
+  --accept-promotions)
+    accept_promotions=1
     shift
     ;;
   -*)
@@ -102,6 +115,47 @@ src=$(find "$tmp" -mindepth 1 -maxdepth 1 -type d | head -1)
   exit 1
 }
 
+migrations=$(read_migrations "$src")
+
+# A file this project owns can be taken over by the standard. Copying the new version over a local
+# edit would revert it with no diff and no record, so that case stops here and a person decides.
+# Checked before anything is written, so refusing leaves the project untouched.
+blocked=""
+while read -r kind from to; do
+  [ "$kind" = promote ] || continue
+  [ -e "$from" ] || continue
+  if [ -f "$from" ] && [ -f "$src/$to" ] && cmp -s "$from" "$src/$to"; then continue; fi
+  blocked="$blocked $from"
+  echo "  !  $from becomes part of the standard, as $to, and your copy differs:" >&2
+  diff -u "$from" "$src/$to" | sed 's/^/     /' >&2 || true
+done <<EOF
+$migrations
+EOF
+if [ -n "$blocked" ] && [ "$accept_promotions" != 1 ]; then
+  echo >&2
+  echo "Nothing has been changed. Each file above has a documented seam for holding a local" >&2
+  echo "difference without holding a copy of the file; see SDLC-GUIDE.md. Port the change into" >&2
+  echo "the seam, or re-run with --accept-promotions to take the standard's version and keep" >&2
+  echo "yours on disk to port later." >&2
+  exit 1
+fi
+
+# Relocations of paths the project owns. Applied first, so the rest of the upgrade writes into the
+# shape this version expects.
+while read -r kind from to; do
+  [ "$kind" = move ] || continue
+  [ -e "$from" ] || continue
+  [ ! -e "$to" ] || {
+    echo "Cannot move $from to $to: $to already exists. Resolve it by hand, then re-run." >&2
+    exit 1
+  }
+  mkdir -p "$(dirname "$to")"
+  mv "$from" "$to"
+  echo "  > $from -> $to"
+done <<EOF
+$migrations
+EOF
+
 incoming=$(expand_invariant "$src")
 
 # Drop invariant files this version no longer ships.
@@ -124,6 +178,22 @@ while IFS= read -r f; do
 done <<<"$incoming"
 
 cp -p "$src/$MANIFEST" "$MANIFEST"
+
+# The standard now ships what these paths held. An identical copy is simply redundant; one that
+# differs got here through --accept-promotions, and is left on disk for a person to port.
+while read -r kind from to; do
+  [ "$kind" = promote ] || continue
+  [ -e "$from" ] || continue
+  if [ -f "$from" ] && [ -f "$to" ] && cmp -s "$from" "$to"; then
+    rm -f "$from"
+    echo "  - $from (the standard ships it as $to)"
+  else
+    echo "  !  $from is now inert: the pipeline reads $to. Port your change into the seam and" >&2
+    echo "     delete it; template-check fails until you do." >&2
+  fi
+done <<EOF
+$migrations
+EOF
 
 # Every pattern below is anchored to the start of the line, so the `#   uses: ...` example in a
 # caller's header comment is never mistaken for the real job key.

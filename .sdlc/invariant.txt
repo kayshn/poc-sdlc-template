@@ -10,6 +10,10 @@
 # This file lists itself for the same reason.
 .sdlc/invariant.txt
 
+# How a release changes the shape of a project: relocating a path the project owns, or taking over
+# a file it used to own. Received rather than owned, because the consumer is the one it is done to.
+.sdlc/MIGRATIONS
+
 # The scripts the pipeline relies on being deterministic. make_manifest.sh is deliberately absent:
 # it regenerates the manifest, so shipping it to a consumer would put "silence the drift check"
 # one command away from anyone who hits a red build.

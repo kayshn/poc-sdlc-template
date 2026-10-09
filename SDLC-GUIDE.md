@@ -235,6 +235,22 @@ triggers, the edit is in the diff: reapply it to the caller, or pass it as an in
 installed *before* it, so the release that teaches it a new way to wire the callers cannot use it
 on the way in.
 
+**An upgrade may change the shape of the project.** Comparing manifests tells `sdlc_update.sh` what
+the standard ships, not where the project's own files should live, so a release that relocates a
+path the project owns — or takes over a file the project used to own — declares it in
+`.sdlc/MIGRATIONS`. Two kinds, and only the second ever interrupts:
+
+- `move` relocates a path the project owns. It happens quietly, appears in the diff as a rename, and
+  refuses rather than merges if something is already at the destination.
+- `promote` means a file the project owned is now part of the standard. An identical copy is deleted
+  as redundant. **A copy that differs stops the upgrade before anything is written**, printing the
+  diff, because installing over it would revert a deliberate edit with no warning and no record.
+  Every promoted file has a documented seam for keeping that difference without keeping a copy of
+  the file — `.sdlc/REVIEW.local.md` beside `REVIEW.md`, `project-guardrails.md` beside the
+  engineering guardrails, a `make` target behind a hook. Port the change into the seam and re-run.
+  `--accept-promotions` is the escape hatch: it takes the standard's version and leaves yours on
+  disk to port later, and `make template-check` fails until that copy is gone.
+
 **Three things to expect:**
 
 - **The upgrade pull request gets no AI review.** `claude-code-action` refuses to run when a workflow
@@ -265,6 +281,8 @@ especially risky either, but `check_template.sh` warns on every run until the pr
 | `REVIEW.md keeps the Guardrails pass` fails | Same cause. Copy the *Guardrails* bullet from the template's `.sdlc/REVIEW.md` |
 | `design: a high-level diagram is declared` fails | The project predates the guardrail G6. Add `diagram: .sdlc/architecture/container.md` under `stages.design` in `.sdlc/flow.yaml` and create the file — both are the project's, so no upgrade can add them |
 | `specs/<slug>.md: High-level design` fails | The spec neither shows an amended mermaid view nor states `No architectural change.`. A spec written before G6 existed needs the line added once |
+| `becomes part of the standard, and your copy differs` stops an upgrade | A release took over a file the project owned. Port the local change into that file's seam and re-run, or use `--accept-promotions` to take the standard's version and port later |
+| `is gone now that the standard ships it as ...` fails | A promoted file was left on disk by `--accept-promotions`. It is inert — the pipeline reads the standard's copy. Port the change, then delete it |
 | `workflow was not found` on every run | The template is private and the consumer is public. No setting permits that combination |
 | Required check never completes | Either the check is `ci / test`, not `test` — a called workflow reports as `<caller job> / <called job>` — or a check was required from a path-filtered workflow. A skipped run reports no status, so the check stays pending forever |
 | Spec pull request opens but never merges | `SDLC_BOT_TOKEN` is missing, so the author is `github-actions[bot]`, which cannot approve its own pull request. Or auto-merge is disabled on the repository |
