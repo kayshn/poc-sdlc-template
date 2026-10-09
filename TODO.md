@@ -4,10 +4,32 @@ Deferred work on the template itself. Not part of the standard a consumer receiv
 
 ## Known defects
 
-None outstanding. The four recorded here were fixed in `v1.7.0`: `open_pr.sh` discarding generated
-work on failure, reporting a push rejection as a bare `exit 128`, opening a pull request that could
-never merge when two runs raced, and the build agent being told to run checks it was not permitted
-to run.
+- **Fixes to a workflow body never reach an existing consumer.** Four workflows carry real logic in
+  a file the project owns: `intent-to-spec.yml`, `spec-to-build.yml`, `claude.yml` and
+  `monitor.yml`. Only the trigger is repo-specific; the rest is the standard. `sdlc_update.sh`
+  rewrites a caller's `uses:` ref and nothing else, so a change to the body is announced in release
+  notes and silently not delivered.
+
+  Two shipped fixes were found undelivered on 2026-10-09, in a consumer that reported
+  `template-check` green and was pinned to the newest tag:
+
+  | Fix | Released | Still missing in the consumer |
+  |---|---|---|
+  | `agent-evals.yml` trigger, so `evals / suite` is safe to require | `v1.2.0` | the path filter was still there, so the check never ran and could not be required |
+  | `--unless` race guard in `intent-to-spec.yml` | `v1.7.0` | the call had no guard |
+
+  The first is the more serious: a team following the guide would have required a check that never
+  reports and blocked every pull request in the repository.
+
+  The fix is to split those four the way `ci`, `claude-review`, `deploy`, `agent-evals` and
+  `sdlc-update` are already split — body in a `_*.yml` callable, triggers in the caller — so that
+  only the triggers remain project-owned. That is a breaking change for consumers and belongs in a
+  major version. Until then, `check_template.sh` should compare each caller's body against the
+  pinned tag and fail on drift, so at least it is visible.
+
+Previously recorded and fixed in `v1.7.0`: `open_pr.sh` discarding generated work on failure,
+reporting a push rejection as a bare `exit 128`, opening a pull request that could never merge when
+two runs raced, and the build agent being told to run checks it was not permitted to run.
 
 Two notes survive those fixes:
 
