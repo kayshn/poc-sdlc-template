@@ -210,7 +210,7 @@ The two findings, both substantive:
 
 Four pieces of work, smallest first. The last is the only one that needs a gate at all:
 
-- **G6: a spec may not relax a rule.** A spec, plan or build that needs a `CLAUDE.md` convention, a
+- **G7: a spec may not relax a rule.** A spec, plan or build that needs a `CLAUDE.md` convention, a
   skill rule or a guardrail changed must propose that amendment as its own change and block on it.
   Belongs in `.sdlc/standards/engineering-guardrails.md`, where it binds the spec *author* rather
   than being caught afterwards by the reviewer. Cheapest, prevents the class, and the provenance is

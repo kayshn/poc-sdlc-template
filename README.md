@@ -27,7 +27,8 @@ Nothing here is tied to a language, framework or test runner. The only assumptio
 | `.sdlc/TEMPLATE_VERSION` | Which tag of the standard this project is on. Absent in the template repo itself |
 | `.sdlc/protected-paths.txt` | Path prefixes the agent may not edit while fixing a bug. Yours to point at your test directory |
 | `.sdlc/intent/_TEMPLATE.md`<br>`.sdlc/specs/_TEMPLATE.md`<br>`.sdlc/plans/_TEMPLATE.md` | The artefact shapes for stages 1, 2 and 3 |
-| `.sdlc/standards/engineering-guardrails.md` | The rules the agent is held to, G1–G5. Invariant: `CLAUDE.md` imports it into every session and the *Guardrails* review pass checks each diff against it |
+| `.sdlc/standards/engineering-guardrails.md` | The rules the agent is held to, G1–G6. Invariant: `CLAUDE.md` imports it into every session and the *Guardrails* review pass checks each diff against it |
+| `.sdlc/architecture/container.md` | The one high-level view of the system, named by `stages.design.diagram`. G6 makes the design stage amend it or state in the spec that nothing moved; `check_flow.sh` fails a spec that does neither |
 | `.sdlc/REVIEW.md` | The four review passes the AI reviewer runs on every PR |
 | `.sdlc/scripts/next_intent_number.sh` | Next slug number |
 | `.sdlc/scripts/open_pr.sh` | Deterministic commit + PR, used by the workflows so the agent only ever writes files |
