@@ -9,6 +9,9 @@ Run three passes and tag each finding with its pass:
 - **Bugs**: logic errors, broken edge cases, subtle regressions.
 - **Security**: authentication and authorisation gaps, injection, one user reading or changing another user's data, sensitive or user-supplied content in logs and error messages, missing audit events. Apply the secure-api-review skill.
 - **Compliance**: the change matches `.sdlc/specs/<slug>.md` and `.sdlc/plans/<slug>.md` for this change, and CLAUDE.md conventions. If the PR has no matching spec or plan, say so.
+- **Guardrails** — check the diff against `.sdlc/standards/engineering-guardrails.md`. Cite the
+  id (G1–G5) for every breach. A suppression added to make a check pass is a G2 breach even when
+  the check was genuinely wrong.
 
 ## Claims about what was run
 A plan or pull request description may assert that a check was run, skipped, or refused for want of

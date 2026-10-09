@@ -6,6 +6,8 @@
 
 <One or two sentences: what this is, who it serves.>
 
+@.sdlc/standards/engineering-guardrails.md
+
 ## Commands
 - Install: `make install`
 - Test: `make test` (healthy output: <what a passing run ends with>)
