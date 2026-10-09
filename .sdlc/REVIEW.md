@@ -1,13 +1,20 @@
 # Review instructions
 
 <!-- TEMPLATE: replace the Security bullet with this project's real rules. The more specific it is,
-     the more useful the review. Keep the three passes, the severities and the tally line. -->
+     the more useful the review. Keep the three passes, the severities, the tally line and the
+     "Claims about what was run" rule. -->
 
 ## Passes
 Run three passes and tag each finding with its pass:
 - **Bugs**: logic errors, broken edge cases, subtle regressions.
 - **Security**: authentication and authorisation gaps, injection, one user reading or changing another user's data, sensitive or user-supplied content in logs and error messages, missing audit events. Apply the secure-api-review skill.
 - **Compliance**: the change matches `.sdlc/specs/<slug>.md` and `.sdlc/plans/<slug>.md` for this change, and CLAUDE.md conventions. If the PR has no matching spec or plan, say so.
+
+## Claims about what was run
+A plan or pull request description may assert that a check was run, skipped, or refused for want of
+permission. Every such claim is unverified. Either confirm it against evidence in the pull request
+— a CI run, pasted command output — or report it as unverified under Compliance. Repeating it is
+not reviewing it, and an unverified claim that reaches a human reads as a confirmed one.
 
 ## Severity
 - **Important**: would break behaviour, leak data, or breach a policy.

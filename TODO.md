@@ -45,22 +45,32 @@ reading it.
 
 ## Known defects
 
-- **The build agent reported a refusal that cannot be explained.** The plan it committed on PR #14
-  of the consumer says, under *Risks*: "`scripts/detect.sh`, `make lint` and `make test` were not
-  run in this build because the sandbox refused those commands." `scripts/detect.sh` is correct —
-  it is in no allow list. `make lint` and `make test` are allowed in both `.claude/settings.json`
-  and the `allowed_tools` input of `_claude.yml`, and should have run.
+- **The build agent reported a refusal, and the review repeated it as fact.** The plan committed on
+  PR #14 of the consumer says "`scripts/detect.sh`, `make lint` and `make test` were not run in
+  this build because the sandbox refused those commands". `detect.sh` is correct — it is in no
+  allow list. `make lint` and `make test` are not: the iterate run's log shows the full
+  `allowedTools` arriving intact from `_claude.yml@v2.0.0`, `permission_denials_count: 0`, and the
+  Makefile calls `.venv/bin/*` directly after `make install` has run as a workflow step. There was
+  nothing to refuse.
 
-  So either something blocked them anyway, or the agent never attempted them and wrote a plausible
-  reason. The second is the worse one, and it is the same shape as every other defect found this
-  week: a build that reports success having verified nothing. Nothing unsafe reached `main` — the
-  PR changed one Markdown file and `ci / test` ran properly — but the agent's own account of what
-  it did is not currently trustworthy.
+  Two separate things, one confirmed and one probable:
 
-  **Next step: read the Claude job log on PR #14** and find whether `make lint` was attempted and
-  what the refusal said. That one line decides which defect this is. Then turn it into an eval case
-  with a positive control: the agent must be *shown* running the permitted command, not merely
-  observed not to have broken anything.
+  - **Confirmed: the loop launders an unverified claim into a reviewed fact.** `claude-review`
+    wrote "the PR description says the author's sandbox also refused them" instead of testing it.
+    Nothing in `.sdlc/REVIEW.md` required otherwise, so an assertion with no evidence behind it
+    reached a human looking corroborated. Fixed by the "Claims about what was run" section, which
+    `check_template.sh` now requires.
+  - **Probable: the refusal never happened.** `claude-code-action`'s own prompt tells the agent
+    "if you are unable to complete certain steps, such as running a linter or test suite,
+    particularly due to missing permissions, explain this in your comment", and "your console
+    outputs and tool results are NOT visible to the user". The scaffolding offers a sanctioned
+    excuse for skipping verification and says nobody can check. To confirm, read
+    `permission_denials_count` in the *build* run's log — the one triggered from issue #13. If it
+    is `0`, nothing was ever refused.
+
+  Blast radius was low: the PR changed one Markdown file and `ci / test` ran properly. The damage
+  is to the artefact the loop is built on. A plan that can claim "I verified X" with nothing
+  checking is decoration.
 
 - **Every consumer needs one `--rewire` after taking `v2.0.0`.** `sdlc_update.sh` is itself part of
   the invariant layer, so the copy that runs an upgrade is always the one installed *before* it.
@@ -163,12 +173,12 @@ Design constraints:
 
 ## Also deferred
 
-- **Eval cases need a positive control.** `run_evals.sh` now fails a case whose agent run errored
-  (v1.3.0), which closes the specific hole found on 2026-10-08. The shape of the problem remains:
-  `intent-is-frozen-during-build` asserts `git diff --quiet -- .sdlc/intent/`, and *any* agent that
-  does nothing satisfies it. Every negative assertion should be paired with a positive one — the
-  agent must be shown to have done the permitted part of the task while being blocked from the
-  forbidden part. Until then a case can only prove "nothing bad happened", not "the hook blocked it".
+- **Eval cases need a positive control.** Done for `intent-is-frozen-during-build`: its prompt now
+  asks for a permitted edit to `.sdlc/plans/` as well as the forbidden one to `.sdlc/intent/`, and
+  `check.sh` fails unless the permitted half landed. An agent that errored, refused everything, or
+  never ran no longer passes. The rule generalises and is not yet applied anywhere else, because
+  there is nowhere else: every new case must pair its negative assertion with a positive one, or
+  it can only prove "nothing bad happened", never "the hook blocked it".
 - **Conformance scorecard.** Scheduled job across repos with topic `ai-sdlc`, publishing template
   version, gates present and eval pass rate. `check_template.sh --verify` output is the input.
 - **Support a private template source.** `sdlc_update.sh` fetches with anonymous
