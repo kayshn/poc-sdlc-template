@@ -215,15 +215,3 @@ Design constraints:
   but nothing stops `sdlc_update.sh v1.0.0`.
 - **`make install` provisioning is unproven beyond Python.** The claim that the Makefile is the only
   seam needs a second consumer on a different stack to hold up.
-
-
-## K1
-- Evaluate using Copilot instead of Claude
-- Evaluate AWS SDLC
-- Improve evals and measuring agent performance
-- Measure value from using DLC
-- Clarify how versioning works in template and consumer works
-- Add some engineering guardrails
-- Update spec step to create and update C4 diagrams if necessary
-- Test the monitor stage
-- Have a check in pipeline to fail any build that uses old DLC version
