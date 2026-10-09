@@ -5,7 +5,7 @@ Removed from a repository created from this template on first install.
 
 ## Where things stand (2026-10-09)
 
-Both repositories are clean and on `v1.7.0`. `flow-check`, `template-check`, `lint` and `test` all
+Both repositories are clean and on `v2.0.0`. `flow-check`, `template-check`, `lint` and `test` all
 pass in the consumer. Nothing is half-done.
 
 **Repositories.** `kayshn/poc-sdlc-template` (public, template repo, topic `ai-sdlc`) and
@@ -13,20 +13,22 @@ pass in the consumer. Nothing is half-done.
 repository cannot call a private repository's reusable workflow, and a private repository on the
 free plan silently loses the `production` environment reviewers that are the release gate.
 
-**The loop has run end to end once.** Slug `000-expiring-links` went intent → spec → build issue →
-code → review → merge → deploy. Five of six stages are proven. Costs so far are around $0.30 of
-Anthropic API credit.
+**All six stages are now proven.** The first lap, slug `000-expiring-links`, went intent → spec →
+build issue → code → review → merge → deploy. The second lap closed the remaining two gaps on
+`v2.0.0`: **Run workflow → inject `0.052`** raised slug `001-monitor-ci-test-failure-rate` as an
+intent PR (#11), which carried itself through spec (#12), Build issue (#13) and build PR (#14), and
+a review comment answered with `@claude fix this` produced `52a39b1`. Stage 6 and the stage 4
+iterate path both work. Costs so far are around $0.30 of Anthropic API credit.
 
-**Still unexercised**, and therefore where the next bug is:
-
-- `@claude fix this`, the iterate path in stage 4. A review nit on pull request #6 was never used to
-  trigger it.
-- Stage 6, maintain. `monitor.yml` and the σ-breach path have never run. Try it with
-  **Run workflow → inject `0.052`** for 2σ or `0.2` for 3σ.
+**The monitor's diagnosis was correct and worth reading.** Given only a detector payload, the agent
+worked out unprompted that the breach was probably synthetic — it found the `inject` input in
+`monitor.yml`, noticed `detect.sh` never writes `metrics.json`, and named the one check that would
+settle it. That check has since been run: injected `0.052` reproduces its numbers exactly, and the
+committed series reports `tier: none`. It was right, and it said "hypothesis, not confirmed".
 
 **Environment.** `gh` has been uninstalled, so opening pull requests, reading run logs and creating
 releases all have to happen in the browser. `yq` is still needed for `make flow-check`. Tags
-`v1.6.0` through `v1.7.0` have no GitHub Release pages; the tags work and `sdlc_update.sh` does not
+`v1.6.0` through `v2.0.0` have no GitHub Release pages; the tags work and `sdlc_update.sh` does not
 need them, so the notes live only in commit messages.
 
 **Two settings that are deliberately not what the guide recommends**, because this is a
@@ -43,19 +45,36 @@ reading it.
 
 ## Known defects
 
-- **Every consumer needs one `--rewire` after taking the release that splits the last four
-  workflows.** `sdlc_update.sh` is itself part of the invariant layer, so the copy that runs an
-  upgrade is always the one installed *before* it. The release that teaches the script to migrate a
-  full-body workflow into a thin caller is therefore run by a script that cannot do it. The new
-  `check_template.sh` arrives in the same upgrade and fails the upgrade PR with the remedy in the
-  message:
+- **The build agent reported a refusal that cannot be explained.** The plan it committed on PR #14
+  of the consumer says, under *Risks*: "`scripts/detect.sh`, `make lint` and `make test` were not
+  run in this build because the sandbox refused those commands." `scripts/detect.sh` is correct —
+  it is in no allow list. `make lint` and `make test` are allowed in both `.claude/settings.json`
+  and the `allowed_tools` input of `_claude.yml`, and should have run.
+
+  So either something blocked them anyway, or the agent never attempted them and wrote a plausible
+  reason. The second is the worse one, and it is the same shape as every other defect found this
+  week: a build that reports success having verified nothing. Nothing unsafe reached `main` — the
+  PR changed one Markdown file and `ci / test` ran properly — but the agent's own account of what
+  it did is not currently trustworthy.
+
+  **Next step: read the Claude job log on PR #14** and find whether `make lint` was attempted and
+  what the refusal said. That one line decides which defect this is. Then turn it into an eval case
+  with a positive control: the agent must be *shown* running the permitted command, not merely
+  observed not to have broken anything.
+
+- **Every consumer needs one `--rewire` after taking `v2.0.0`.** `sdlc_update.sh` is itself part of
+  the invariant layer, so the copy that runs an upgrade is always the one installed *before* it.
+  The release that teaches the script to migrate a full-body workflow into a thin caller is
+  therefore run by a script that cannot do it. `check_template.sh` arrives in the same upgrade and
+  fails the upgrade PR with the remedy in the message:
 
       ./.sdlc/scripts/sdlc_update.sh --rewire
 
-  One command, once, and only for repositories created before that release. Every later body
-  extraction migrates on its own, because the migration code is by then already installed.
+  One command, once, and only for repositories created before `v2.0.0`. Done in the consumer on
+  2026-10-09 (PR #10). Every later body extraction migrates on its own, because the migration code
+  is by then already installed.
 
-Fixed in the release that splits `intent-to-spec`, `spec-to-build`, `claude` and `monitor`:
+Fixed in `v2.0.0`:
 
 - **Fixes to a workflow body never reach an existing consumer.** Those four carried real logic in a
   file the project owned, so `sdlc_update.sh` — which rewrites a caller's `uses:` ref and nothing
@@ -95,9 +114,13 @@ Two notes survive those fixes:
 
 ## Untested
 
-- **`@claude fix this`.** The iterate path in stage 4 has never been exercised. Everything else in
-  the loop has now run at least once.
-- **Stage 6, maintain.** `monitor.yml` and the σ-breach path have never run.
+Every stage of the loop has now run at least once. What is left untested is the second-order
+behaviour, not the path:
+
+- **A σ-breach the agent cannot dismiss.** The one run of stage 6 was synthetic and the agent said
+  so. A 3σ breach (`inject 0.2`) and its pre-approved rollback runbook have still never run.
+- **A real `@claude fix this`.** The one exercise of the iterate path produced a one-line edit to a
+  Markdown plan. It has never been asked to change code in response to a review.
 
 ## Script the GitHub settings (`setup_github.sh`)
 
