@@ -12,7 +12,21 @@
 # act with a diff and a review, which is the whole point.
 set -euo pipefail
 trap 'echo "sdlc_update.sh failed at line $LINENO" >&2' ERR
-cd "$(dirname "$0")/../.."
+
+# This script copies the invariant layer, which contains this script. Bash reads a script
+# incrementally from a file offset, so overwriting it mid-run resumes at a meaningless offset and
+# fails with a syntax error, after some of the work has been done. Re-exec from a copy first.
+if [ "${SDLC_UPDATE_REEXEC:-}" != 1 ]; then
+  SDLC_UPDATE_ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+  export SDLC_UPDATE_ROOT SDLC_UPDATE_REEXEC=1
+  self=$(mktemp)
+  trap 'rm -f "$self"' EXIT
+  cat "$0" >"$self"
+  bash "$self" "$@"
+  exit $?
+fi
+
+cd "${SDLC_UPDATE_ROOT:-$(dirname "$0")/../..}"
 # shellcheck source=.sdlc/scripts/_sdlc_lib.sh
 . ./.sdlc/scripts/_sdlc_lib.sh
 
